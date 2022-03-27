@@ -12,5 +12,4 @@ PWD := $(shell pwd)
 up:
 	docker run --rm -it -v $(PWD):/work_space -w /work_space compile_book bash
 
-
 .PHONY: test clean
