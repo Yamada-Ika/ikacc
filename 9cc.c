@@ -21,6 +21,8 @@ struct Token
 	char		*str;	// トークン文字列
 };
 
+char	*g_code;
+
 // エラーを報告するための関数
 // printfと同じ引数を取る
 void error(char *fmt, ...) {
@@ -57,6 +59,20 @@ void	set_str(Token *this, char *str)
 	this->str = str;
 }
 
+void	error_at(char *loc, char *fmt, ...)
+{
+	va_list	ap;
+	va_start(ap, fmt);
+
+	int	pos = loc - g_code;
+	fprintf(stderr, "%s\n", g_code);
+	fprintf(stderr, "%*s", pos, " ");
+	fprintf(stderr, "^ ");
+	vfprintf(stderr, fmt, ap);
+	fprintf(stderr, "\n");
+	exit(1);
+}
+
 Token	*tokenize(char *code)
 {
 	Token	head;
@@ -86,7 +102,7 @@ Token	*tokenize(char *code)
 			code++;
 			continue ;
 		}
-		error("error: Cannot tokenize '%s'\n", code);
+		error_at(code, "Cannot tokenize");
 		return (NULL);
 	}
 	cur = new_token(cur);
@@ -117,6 +133,10 @@ int	expect_number(Token **this)
 {
 	int	n;
 
+	if (!is(*this, TK_NUM))
+	{
+		error_at((*this)->str, "should be numeric");
+	}
 	n = get_val(*this);
 	*this = (*this)->next;
 	return (n);
@@ -176,6 +196,7 @@ int	main(int argc, char **argv)
 		return (1);
 	}
 
+	g_code = argv[1];
 	Token	*token = tokenize(argv[1]);
 
 	// dbg(token);
