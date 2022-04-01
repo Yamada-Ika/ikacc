@@ -1,6 +1,6 @@
 *.out
 *.o
 *.s
-9cc
+ikacc
 tmp
 .*
