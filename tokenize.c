@@ -32,7 +32,6 @@ Token	*tokenize(char *code)
 	Token	head;
 	Token	*cur;
 
-	// fprintf(stderr, "Start tokenize\n");
 	cur = &head;
 	while (code != NULL)
 	{
@@ -48,7 +47,7 @@ Token	*tokenize(char *code)
 			set_val(cur, strtol(code, &code, 10));
 			continue ;
 		}
-		if (*code == '+' || *code == '-')
+		if (*code == '+' || *code == '-' || *code == '*' || *code == '/' || *code == '(' || *code == ')')
 		{
 			cur = new_token(cur);
 			set_token_kind(cur, TK_RESERVED);
@@ -61,7 +60,6 @@ Token	*tokenize(char *code)
 	}
 	cur = new_token(cur);
 	set_token_kind(cur, TK_EOF);
-	// fprintf(stderr, "End tokenize\n");
 	return (head.next);
 }
 
@@ -81,6 +79,13 @@ bool	consume(Token **this, char op)
 		return (false);
 	*this = (*this)->next;
 	return (true);
+}
+
+void	expect(Token **this, char op)
+{
+	if (!is(*this, TK_RESERVED) || (*this)->str[0] != op)
+		error_at((*this)->str, "expect %c, but got %c\n", op, (*this)->str[0]);
+	*this = (*this)->next;
 }
 
 int	expect_number(Token **this)

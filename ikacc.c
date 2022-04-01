@@ -22,6 +22,13 @@ void	gen(Node *node)
 		case ND_SUB:
 			printf("\tsub rax, rdi\n");
 			break ;
+		case ND_MUL:
+			printf("\timul rax, rdi\n");
+			break ;
+		case ND_DIV:
+			printf("\tcqo\n");
+			printf("\tidiv rdi\n");
+			break ;
 	}
 
 	printf("\tpush rax\n");
@@ -91,7 +98,6 @@ int	main(int argc, char **argv)
 	printf(".globl main\n");
 	printf("main:\n");
 	gen(node);
-	// printf("\tpush rax\n");
 	printf("\tpop rax\n");
 	printf("\tret\n");
 	return (0);

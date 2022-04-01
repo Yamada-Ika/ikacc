@@ -48,6 +48,7 @@ char	*g_code;
 // tokenize
 Token	*tokenize(char *code);
 bool	consume(Token **this, char op);
+void	expect(Token **this, char op);
 bool	at_eof(Token *this);
 bool	is(Token *this, TokenKind kind);
 int		expect_number(Token **this);
