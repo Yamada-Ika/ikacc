@@ -1,12 +1,15 @@
 CFLAGS=-std=c11 -g -static
 
-9cc: 9cc.c
+SRCS	:= $(wildcard *.c)
+OBJS	:= $(SRCS:%.c=%.o)
 
-test: 9cc
+ikacc: $(OBJS)
+
+test: ikacc
 	./test.sh
 
 clean:
-	rm -f 9cc *.o *~ tmp*
+	rm -f ikacc *.o *~ tmp*
 
 PWD := $(shell pwd)
 up:
