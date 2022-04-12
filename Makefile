@@ -5,11 +5,13 @@ OBJS	:= $(SRCS:%.c=%.o)
 OBJS	:= $(addprefix obj/, $(OBJS))
 
 ikacc: $(OBJS)
+	$(CC) $(CFLAGS) -o ikacc $(OBJS)
 
 obj/%.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $^
 
-test: ikacc
+test:
+	make
 	./test.sh
 
 clean:
