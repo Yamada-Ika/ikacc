@@ -93,7 +93,7 @@ Node	*mul(Token **token)
 	}
 }
 
-Node	*expr(Token **token)
+Node	*add(Token **token)
 {
 	Node	*node;
 
@@ -115,6 +115,67 @@ Node	*expr(Token **token)
 			return node;
 		}
 	}
+}
+
+Node	*relational(Token **token)
+{
+	Node	*node;
+
+	node = add(token);
+	while (true)
+	{
+		if (consume(token, "<"))
+		{
+			node = new_node(node, add(token));
+			set_node_kind(node, ND_LT);
+		}
+		else if (consume(token, "<="))
+		{
+			node = new_node(node, add(token));
+			set_node_kind(node, ND_LE);
+		}
+		else if (consume(token, ">"))
+		{
+			node = new_node(add(token), node);
+			set_node_kind(node, ND_LT);
+		}
+		else if (consume(token, ">="))
+		{
+			node = new_node(add(token), node);
+			set_node_kind(node, ND_LE);
+		}
+		else
+			return node;
+	}
+	return node;
+}
+
+Node	*equality(Token **token)
+{
+	Node	*node;
+
+	node = relational(token);
+	while (true)
+	{
+		if (consume(token, "=="))
+		{
+			node = new_node(node, relational(token));
+			set_node_kind(node, ND_EQ);
+		}
+		else if (consume(token, "!="))
+		{
+			node = new_node(node, relational(token));
+			set_node_kind(node, ND_NE);
+		}
+		else
+			return node;
+	}
+	return node;
+}
+
+Node	*expr(Token **token)
+{
+	return equality(token);
 }
 
 Node	*parse(Token *token)

@@ -9,6 +9,7 @@
 #include <string.h>
 
 # define DBG() fprintf(stderr, "%s %d\n", __func__, __LINE__)
+# define P(s) fprintf(stderr, "%s\n", s)
 
 typedef enum e_TokenKind
 {
@@ -34,6 +35,10 @@ typedef enum {
 	ND_SUB, // -
 	ND_MUL, // *
 	ND_DIV, // /
+	ND_EQ, // ==
+	ND_NE, // !=
+	ND_LT, // <
+	ND_LE, // <=
 	ND_NUM, // 整数
 } NodeKind;
 

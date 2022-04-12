@@ -46,13 +46,30 @@ Token	*new_token_num(Token *old, char **code)
 	return (new);
 }
 
+Token	*new_token_reserved(Token *old, char **code, int len)
+{
+	Token	*new;
+
+	new = new_token(old);
+	set_token_kind(new, TK_RESERVED);
+	set_str(new, *code);
+	set_token_len(new, len);
+	(*code) += len;
+	return (new);
+}
+
+bool	start_with(const char *s1, const char *s2)
+{
+	return (strncmp(s1, s2, strlen(s2)) == 0);
+}
+
 Token	*tokenize(char *code)
 {
 	Token	head;
 	Token	*cur;
 
 	cur = &head;
-	while (code != NULL)
+	while (*code != '\0')
 	{
 		while (*code == ' ')
 			code++;
@@ -63,13 +80,18 @@ Token	*tokenize(char *code)
 			cur = new_token_num(cur, &code);
 			continue ;
 		}
-		if (*code == '+' || *code == '-' || *code == '*' || *code == '/' || *code == '(' || *code == ')')
+		if (start_with(code, "==")
+			|| start_with(code, "!=")
+			|| start_with(code, "<=")
+			|| start_with(code, ">=")
+		)
 		{
-			cur = new_token(cur);
-			set_token_kind(cur, TK_RESERVED);
-			set_str(cur, code);
-			set_token_len(cur, 1);
-			code++;
+			cur = new_token_reserved(cur, &code, 2);
+			continue ;
+		}
+		if (strchr("+-*/()<>", *code) != NULL)
+		{
+			cur = new_token_reserved(cur, &code, 1);
 			continue ;
 		}
 		error_at(code, "Cannot tokenize");

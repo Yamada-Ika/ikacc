@@ -29,6 +29,26 @@ void	gen(Node *node)
 			printf("\tcqo\n");
 			printf("\tidiv rdi\n");
 			break ;
+		case ND_LT:
+			printf("\tcmp rax, rdi\n");
+			printf("\tsetl al\n");
+			printf("\tmovzb rax, al\n");
+			break ;
+		case ND_LE:
+			printf("\tcmp rax, rdi\n");
+			printf("\tsetle al\n");
+			printf("\tmovzb rax, al\n");
+			break ;
+		case ND_EQ:
+			printf("\tcmp rax, rdi\n");
+			printf("\tsete al\n");
+			printf("\tmovzb rax, al\n");
+			break ;
+		case ND_NE:
+			printf("\tcmp rax, rdi\n");
+			printf("\tsetne al\n");
+			printf("\tmovzb rax, al\n");
+			break ;
 	}
 
 	printf("\tpush rax\n");
@@ -45,7 +65,7 @@ void	dbg_token(Token *this)
 		if (is_same_token_kind(this, TK_NUM))
 			fprintf(stderr, "TK_NUM      : %d\n", this->val);
 		else if (is_same_token_kind(this, TK_RESERVED))
-			fprintf(stderr, "TK_RESERVED : %c\n", this->str[0]);
+			fprintf(stderr, "TK_RESERVED : %s\n", this->str);
 		fprintf(stderr, "len         : %d\n", this->len);
 		this = this->next;
 	}
