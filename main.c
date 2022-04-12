@@ -80,10 +80,7 @@ void	dbg_node(Node *this)
 int	main(int argc, char **argv)
 {
 	if (argc != 2)
-	{
-		fprintf(stderr, "error: invalid argument\n");
-		return (1);
-	}
+		error("error: invalid argument");
 
 	g_code = argv[1];
 	Token	*token = tokenize(argv[1]);
