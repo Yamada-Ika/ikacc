@@ -6,6 +6,9 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <string.h>
+
+# define DBG() fprintf(stderr, "%s %d\n", __func__, __LINE__)
 
 typedef enum e_TokenKind
 {
@@ -22,6 +25,7 @@ struct Token
 	Token		*next;	// 次の入力トークン
 	int			val;	// kindがTK_NUMの場合、その数値
 	char		*str;	// トークン文字列
+	int			len;	// length of token
 };
 
 // 抽象構文木のノードの種類
@@ -47,10 +51,10 @@ char	*g_code;
 
 // tokenize
 Token	*tokenize(char *code);
-bool	consume(Token **this, char op);
-void	expect(Token **this, char op);
+bool	consume(Token **this, char *op);
+void	expect(Token **this, char *op);
 bool	at_eof(Token *this);
-bool	is(Token *this, TokenKind kind);
+bool	is_same_token_kind(Token *this, TokenKind kind);
 int		expect_number(Token **this);
 
 // parse

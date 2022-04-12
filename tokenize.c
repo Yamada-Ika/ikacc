@@ -27,6 +27,25 @@ void	set_str(Token *this, char *str)
 	this->str = str;
 }
 
+void	set_token_len(Token *this, int len)
+{
+	this->len = len;
+}
+
+Token	*new_token_num(Token *old, char **code)
+{
+	Token	*new;
+	char	*end;
+
+	new = new_token(old);
+	set_token_kind(new, TK_NUM);
+	set_str(new, *code);
+	set_val(new, strtol(*code, &end, 10));
+	set_token_len(new, end - *code);
+	*code = end;
+	return (new);
+}
+
 Token	*tokenize(char *code)
 {
 	Token	head;
@@ -41,10 +60,7 @@ Token	*tokenize(char *code)
 			break ;
 		if (isdigit(*code))
 		{
-			cur = new_token(cur);
-			set_token_kind(cur, TK_NUM);
-			set_str(cur, code);
-			set_val(cur, strtol(code, &code, 10));
+			cur = new_token_num(cur, &code);
 			continue ;
 		}
 		if (*code == '+' || *code == '-' || *code == '*' || *code == '/' || *code == '(' || *code == ')')
@@ -52,6 +68,7 @@ Token	*tokenize(char *code)
 			cur = new_token(cur);
 			set_token_kind(cur, TK_RESERVED);
 			set_str(cur, code);
+			set_token_len(cur, 1);
 			code++;
 			continue ;
 		}
@@ -63,27 +80,40 @@ Token	*tokenize(char *code)
 	return (head.next);
 }
 
-bool	is(Token *this, TokenKind kind)
+bool	is_same_token_kind(Token *this, TokenKind kind)
 {
 	return (this->kind == kind);
 }
 
 bool	at_eof(Token *this)
 {
-	return (is(this, TK_EOF));
+	return (is_same_token_kind(this, TK_EOF));
 }
 
-bool	consume(Token **this, char op)
+bool	is_same_len(char *s, int len)
 {
-	if (!is(*this, TK_RESERVED) || (*this)->str[0] != op)
+	return (strlen(s) == len);
+}
+
+bool	is_same_token_str(Token *this, char *s)
+{
+	return (strncmp(this->str, s, this->len) == 0
+		&& is_same_len(s, this->len));
+}
+
+bool	consume(Token **this, char *op)
+{
+	if (!is_same_token_kind(*this, TK_RESERVED)
+		|| !is_same_token_str(*this, op))
 		return (false);
 	*this = (*this)->next;
 	return (true);
 }
 
-void	expect(Token **this, char op)
+void	expect(Token **this, char *op)
 {
-	if (!is(*this, TK_RESERVED) || (*this)->str[0] != op)
+	if (!is_same_token_kind(*this, TK_RESERVED)
+		|| !is_same_token_str(*this, op))
 		error_at((*this)->str, "expect %c, but got %c\n", op, (*this)->str[0]);
 	*this = (*this)->next;
 }
@@ -92,7 +122,7 @@ int	expect_number(Token **this)
 {
 	int	n;
 
-	if (!is(*this, TK_NUM))
+	if (!is_same_token_kind(*this, TK_NUM))
 	{
 		error_at((*this)->str, "should be numeric");
 	}

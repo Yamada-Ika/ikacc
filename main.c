@@ -42,10 +42,11 @@ void	dbg_token(Token *this)
 
 	while (!at_eof(this))
 	{
-		if (is(this, TK_NUM))
+		if (is_same_token_kind(this, TK_NUM))
 			fprintf(stderr, "TK_NUM      : %d\n", this->val);
-		if (is(this, TK_RESERVED))
+		else if (is_same_token_kind(this, TK_RESERVED))
 			fprintf(stderr, "TK_RESERVED : %c\n", this->str[0]);
+		fprintf(stderr, "len         : %d\n", this->len);
 		this = this->next;
 	}
 
@@ -71,6 +72,12 @@ void	dbg_node(Node *this)
 			break ;
 		case ND_SUB:
 			fprintf(stderr, "%c\n", '-');
+			break ;
+		case ND_MUL:
+			fprintf(stderr, "%c\n", '*');
+			break ;
+		case ND_DIV:
+			fprintf(stderr, "%c\n", '/');
 			break ;
 	}
 

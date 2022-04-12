@@ -42,10 +42,10 @@ Node	*primary(Token **token)
 {
 	Node	*node;
 
-	if (consume(token, '('))
+	if (consume(token, "("))
 	{
 		node = expr(token);
-		expect(token, ')');
+		expect(token, ")");
 		return node;
 	}
 	node = new_node(NULL, NULL);
@@ -58,9 +58,9 @@ Node	*unary(Token **token)
 {
 	Node	*node;
 
-	if (consume(token, '+'))
+	if (consume(token, "+"))
 		return primary(token);
-	if (consume(token, '-'))
+	if (consume(token, "-"))
 	{
 		node = new_node(new_node_num(0), primary(token));
 		set_node_kind(node, ND_SUB);
@@ -76,12 +76,12 @@ Node	*mul(Token **token)
 	node = unary(token);
 	while (true)
 	{
-		if (consume(token, '*'))
+		if (consume(token, "*"))
 		{
 			node = new_node(node, unary(token));
 			set_node_kind(node, ND_MUL);
 		}
-		else if (consume(token, '/'))
+		else if (consume(token, "/"))
 		{
 			node = new_node(node, unary(token));
 			set_node_kind(node, ND_DIV);
@@ -100,12 +100,12 @@ Node	*expr(Token **token)
 	node = mul(token);
 	while (true)
 	{
-		if (consume(token, '+'))
+		if (consume(token, "+"))
 		{
 			node = new_node(node, mul(token));
 			set_node_kind(node, ND_ADD);
 		}
-		else if (consume(token, '-'))
+		else if (consume(token, "-"))
 		{
 			node = new_node(node, mul(token));
 			set_node_kind(node, ND_SUB);
