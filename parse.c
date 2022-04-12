@@ -23,6 +23,21 @@ Node	*new_node(Node *lhs, Node *rhs)
 	return new;
 }
 
+Node	*new_node_num(int val)
+{
+	Node	*new;
+
+	new = calloc(1, sizeof(Node));
+	set_node_kind(new, ND_NUM);
+	set_node_val(new, val);
+	return new;
+}
+
+int	get_node_num(Node *node)
+{
+	return (node->val);
+}
+
 Node	*primary(Token **token)
 {
 	Node	*node;
@@ -39,21 +54,36 @@ Node	*primary(Token **token)
 	return node;
 }
 
+Node	*unary(Token **token)
+{
+	Node	*node;
+
+	if (consume(token, '+'))
+		return primary(token);
+	if (consume(token, '-'))
+	{
+		node = new_node(new_node_num(0), primary(token));
+		set_node_kind(node, ND_SUB);
+		return node;
+	}
+	return primary(token);
+}
+
 Node	*mul(Token **token)
 {
 	Node	*node;
 
-	node = primary(token);
+	node = unary(token);
 	while (true)
 	{
 		if (consume(token, '*'))
 		{
-			node = new_node(node, primary(token));
+			node = new_node(node, unary(token));
 			set_node_kind(node, ND_MUL);
 		}
 		else if (consume(token, '/'))
 		{
-			node = new_node(node, primary(token));
+			node = new_node(node, unary(token));
 			set_node_kind(node, ND_DIV);
 		}
 		else
