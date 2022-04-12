@@ -1,4 +1,8 @@
-CFLAGS=-std=c11 -g -static
+CFLAGS=-std=c11
+
+ifdef WITH_DEBUG
+	CFLAGS += -g -O0
+endif
 
 SRCS	:= $(wildcard *.c)
 OBJS	:= $(SRCS:%.c=%.o)
@@ -13,6 +17,13 @@ obj/%.o: %.c
 test:
 	make
 	./test.sh
+
+debug: fclean
+	make WITH_DEBUG=1
+	make test
+
+re: fclean
+	make
 
 clean:
 	rm -f $(OBJS)
