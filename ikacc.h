@@ -65,6 +65,9 @@ int		expect_number(Token **this);
 // parse
 Node	*parse(Token *token);
 
+// codegen
+void	gen(Node *node);
+
 // error
 void	error(char *fmt, ...);
 void	error_at(char *loc, char *fmt, ...);
