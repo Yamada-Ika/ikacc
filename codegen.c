@@ -1,13 +1,37 @@
 #include "ikacc.h"
 
+void	gen_lvar(Node *node)
+{
+	if (node->kind != ND_LVAR)
+		error("error: Invalid assign");
+	
+	printf("\tmov rax, rbp\n");
+	printf("\tsub rax, %d\n", node->offset);
+	printf("\tpush rax\n");
+}
+
 void	gen(Node *node)
 {
 	// fprintf(stderr, "Start gen\n");
 
-	if (node->kind == ND_NUM)
-	{
-		printf("\tpush %d\n", node->val);
-		return ;
+	switch (node->kind) {
+		case ND_NUM:
+			printf("\tpush %d\n", node->val);
+			return ;
+		case ND_LVAR:
+			gen_lvar(node);
+			printf("\tpop rax\n");
+			printf("\tmov rax, [rax]\n");
+			printf("\tpush rax\n");
+			return ;
+		case ND_ASSIGN:
+			gen_lvar(node->lhs);
+			gen(node->rhs);
+			printf("\tpop rdi\n");
+			printf("\tpop rax\n");
+			printf("\tmov [rax], rdi\n");
+			printf("\tpush rdi\n");
+			return ;
 	}
 
 	gen(node->lhs);

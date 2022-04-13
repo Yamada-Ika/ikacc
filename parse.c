@@ -38,6 +38,23 @@ int	get_node_num(Node *node)
 	return (node->val);
 }
 
+bool	consume_kind(Token **token, TokenKind kind)
+{
+	if (is_same_token_kind(*token, kind))
+	{
+		*token = (*token)->next;
+		return true;
+	}
+	return false;
+}
+
+void	expect_kind(Token **this, TokenKind kind)
+{
+	if (!is_same_token_kind(*this, kind))
+		error_at((*this)->str, "should be numeric");
+	*this = (*this)->next;
+}
+
 Node	*primary(Token **token)
 {
 	Node	*node;
@@ -48,10 +65,22 @@ Node	*primary(Token **token)
 		expect(token, ")");
 		return node;
 	}
-	node = new_node(NULL, NULL);
-	set_node_kind(node, ND_NUM);
-	set_node_val(node, expect_number(token));
-	return node;
+	if (is_same_token_kind(*token, TK_NUM))
+	{
+		node = new_node(NULL, NULL);
+		set_node_kind(node, ND_NUM);
+		set_node_val(node, expect_number(token));
+		return node;
+	}
+	if (is_same_token_kind(*token, TK_IDENT))
+	{
+		node = new_node(NULL, NULL);
+		set_node_kind(node, ND_LVAR);
+		node->offset = ((*token)->str[0] - 'a' + 1) * 8;
+		expect_kind(token, TK_IDENT);
+		return node;
+	}
+	error("error: Failed to parse");
 }
 
 Node	*unary(Token **token)
@@ -145,7 +174,9 @@ Node	*relational(Token **token)
 			set_node_kind(node, ND_LE);
 		}
 		else
+		{
 			return node;
+		}
 	}
 	return node;
 }
@@ -168,17 +199,55 @@ Node	*equality(Token **token)
 			set_node_kind(node, ND_NE);
 		}
 		else
+		{
 			return node;
+		}
+	}
+	return node;
+}
+
+Node	*assign(Token **token)
+{
+	Node	*node;
+
+	node = equality(token);
+	if (consume(token, "="))
+	{
+		node = new_node(node, assign(token));
+		set_node_kind(node, ND_ASSIGN);
 	}
 	return node;
 }
 
 Node	*expr(Token **token)
 {
-	return equality(token);
+	return assign(token);
+}
+
+Node	*stmt(Token **token)
+{
+	Node	*node;
+
+	node = expr(token);
+	expect(token, ";");
+	return node;
+}
+
+Node	*program(Token **token)
+{
+	size_t	i;
+
+	i = 0;
+	while (!at_eof(*token))
+	{
+		code[i] = stmt(token);
+		i++;
+	}
+	code[i] = NULL;
+	return code[0];
 }
 
 Node	*parse(Token *token)
 {
-	return (expr(&token));
+	return (program(&token));
 }

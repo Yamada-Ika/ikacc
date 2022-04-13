@@ -10,6 +10,8 @@ void	dbg_token(Token *this)
 			fprintf(stderr, "TK_NUM      : %d\n", this->val);
 		else if (is_same_token_kind(this, TK_RESERVED))
 			fprintf(stderr, "TK_RESERVED : %s\n", this->str);
+		else if (is_same_token_kind(this, TK_IDENT))
+			fprintf(stderr, "TK_IDENT    : %s\n", this->str);
 		fprintf(stderr, "len         : %d\n", this->len);
 		this = this->next;
 	}
@@ -58,6 +60,7 @@ int	main(int argc, char **argv)
 	// dbg_token(token);
 
 	Node	*node = parse(token);
+	// PP(node);
 	// fprintf(stderr, "Start dbg_node\n");
 	// dbg_node(node);
 	// fprintf(stderr, "End dbg_node\n");
@@ -65,8 +68,22 @@ int	main(int argc, char **argv)
 	printf(".intel_syntax noprefix\n");
 	printf(".globl main\n");
 	printf("main:\n");
-	gen(node);
-	printf("\tpop rax\n");
+
+	// Prologue
+	printf("\tpush rbp\n");
+	printf("\tmov rbp, rsp\n");
+	printf("\tsub rsp, 208\n"); // Allocate space 26 (variables) * 8 (bit)
+
+	for (int i = 0; code[i] != NULL; i++)
+	{
+		gen(code[i]);
+		printf("\tpop rax\n");
+	}
+
+	// Epilogue
+	printf("\tmov rsp, rbp\n");
+	printf("\tpop rbp\n");
+	
 	printf("\tret\n");
 	return (0);
 }

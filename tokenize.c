@@ -22,7 +22,7 @@ int	get_val(Token *this)
 	return (this->val);
 }
 
-void	set_str(Token *this, char *str)
+void	set_token_str(Token *this, char *str)
 {
 	this->str = str;
 }
@@ -39,7 +39,7 @@ Token	*new_token_num(Token *old, char **code)
 
 	new = new_token(old);
 	set_token_kind(new, TK_NUM);
-	set_str(new, *code);
+	set_token_str(new, *code);
 	set_val(new, strtol(*code, &end, 10));
 	set_token_len(new, end - *code);
 	*code = end;
@@ -52,7 +52,19 @@ Token	*new_token_reserved(Token *old, char **code, int len)
 
 	new = new_token(old);
 	set_token_kind(new, TK_RESERVED);
-	set_str(new, *code);
+	set_token_str(new, *code);
+	set_token_len(new, len);
+	(*code) += len;
+	return (new);
+}
+
+Token	*new_token_ident(Token *old, char **code, int len)
+{
+	Token	*new;
+
+	new = new_token(old);
+	set_token_kind(new, TK_IDENT);
+	set_token_str(new, *code);
 	set_token_len(new, len);
 	(*code) += len;
 	return (new);
@@ -75,6 +87,16 @@ Token	*tokenize(char *code)
 			code++;
 		if (*code == '\0')
 			break ;
+		if (*code == '\n')
+		{
+			code++;
+			continue ;
+		}
+		if ('a' <= *code && *code <= 'z')
+		{
+			cur = new_token_ident(cur, &code, 1);
+			continue ;
+		}
 		if (isdigit(*code))
 		{
 			cur = new_token_num(cur, &code);
@@ -89,7 +111,7 @@ Token	*tokenize(char *code)
 			cur = new_token_reserved(cur, &code, 2);
 			continue ;
 		}
-		if (strchr("+-*/()<>", *code) != NULL)
+		if (strchr("+-*/()<>;=", *code) != NULL)
 		{
 			cur = new_token_reserved(cur, &code, 1);
 			continue ;
@@ -99,6 +121,7 @@ Token	*tokenize(char *code)
 	}
 	cur = new_token(cur);
 	set_token_kind(cur, TK_EOF);
+	set_token_str(cur, code);
 	return (head.next);
 }
 
@@ -136,7 +159,7 @@ void	expect(Token **this, char *op)
 {
 	if (!is_same_token_kind(*this, TK_RESERVED)
 		|| !is_same_token_str(*this, op))
-		error_at((*this)->str, "expect %c, but got %c\n", op, (*this)->str[0]);
+		error_at((*this)->str, "expect %s, but got %c\n", op, (*this)->str[0]);
 	*this = (*this)->next;
 }
 

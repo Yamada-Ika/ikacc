@@ -9,11 +9,14 @@
 #include <string.h>
 
 # define DBG() fprintf(stderr, "%s %d\n", __func__, __LINE__)
-# define P(s) fprintf(stderr, "%s\n", s)
+# define PS(s) fprintf(stderr, "%s\n", s)
+# define PP(p) fprintf(stderr, "%p\n", p)
+# define PD(d) fprintf(stderr, "%d\n", d)
 
 typedef enum e_TokenKind
 {
-	TK_RESERVED,	// 記号
+	TK_RESERVED,	// +,-,*,/,(,),<,>,<=,>=,==,!=
+	TK_IDENT,		// identifer
 	TK_NUM,			// 整数トークン
 	TK_EOF,			// 入力の終わりを表すトークン
 }	TokenKind;
@@ -39,6 +42,8 @@ typedef enum {
 	ND_NE, // !=
 	ND_LT, // <
 	ND_LE, // <=
+	ND_ASSIGN, // =
+	ND_LVAR, // local var
 	ND_NUM, // 整数
 } NodeKind;
 
@@ -49,10 +54,12 @@ struct Node {
 	Node *lhs;     // 左辺
 	Node *rhs;     // 右辺
 	int val;       // kindがND_NUMの場合のみ使う
+	int offset;    // kindがND_LVARの場合のみ使う
 };
 
 // Global var
 char	*g_code;
+Node	*code[100];
 
 // tokenize
 Token	*tokenize(char *code);
