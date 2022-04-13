@@ -61,4 +61,11 @@ assert 6 "foo = 1;
 bar = 2 + 3;
 foo + bar;"
 
+assert 2 "return 2;"
+assert 2 "return 2;
+return 1;"
+assert 6 "foo = 1;
+bar = 2 + 3;
+return foo + bar;"
+
 echo OK

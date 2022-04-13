@@ -113,6 +113,19 @@ Token	*tokenize(char *code)
 			code++;
 			continue ;
 		}
+		if (
+			start_with(code, "return")
+			&& !is_ident_char(*(code + 6))
+			&& !isdigit(*(code + 6))
+		)
+		{
+			cur = new_token(cur);
+			set_token_kind(cur, TK_RETURN);
+			set_token_str(cur, code);
+			set_token_len(cur, 6);
+			code += 6;
+			continue ;
+		}
 		if (is_ident_char(*code))
 		{
 			cur = new_token_ident(cur, &code, calc_ident_len(code));
@@ -165,6 +178,14 @@ bool	is_same_token_str(Token *this, char *s)
 {
 	return (strncmp(this->str, s, this->len) == 0
 		&& is_same_len(s, this->len));
+}
+
+bool	consume_kind(Token **this, TokenKind kind)
+{
+	if (!is_same_token_kind(*this, kind))
+		return (false);
+	*this = (*this)->next;
+	return (true);
 }
 
 bool	consume(Token **this, char *op)

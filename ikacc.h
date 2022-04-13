@@ -17,6 +17,7 @@
 typedef enum e_TokenKind
 {
 	TK_RESERVED,	// +,-,*,/,(,),<,>,<=,>=,==,!=
+	TK_RETURN,		// return
 	TK_IDENT,		// identifer
 	TK_NUM,			// 整数トークン
 	TK_EOF,			// 入力の終わりを表すトークン
@@ -46,6 +47,7 @@ typedef enum {
 	ND_ASSIGN, // =
 	ND_LVAR, // local var
 	ND_NUM, // 整数
+	ND_RETURN, // return
 } NodeKind;
 
 typedef struct Node Node;
@@ -78,6 +80,7 @@ Lvar	*locals;
 // tokenize
 Token	*tokenize(char *code);
 bool	consume(Token **this, char *op);
+bool	consume_kind(Token **this, TokenKind kind);
 void	expect(Token **this, char *op);
 bool	at_eof(Token *this);
 bool	is_same_token_kind(Token *this, TokenKind kind);

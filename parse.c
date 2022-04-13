@@ -38,16 +38,6 @@ int	get_node_num(Node *node)
 	return (node->val);
 }
 
-bool	consume_kind(Token **token, TokenKind kind)
-{
-	if (is_same_token_kind(*token, kind))
-	{
-		*token = (*token)->next;
-		return true;
-	}
-	return false;
-}
-
 void	expect_kind(Token **this, TokenKind kind)
 {
 	if (!is_same_token_kind(*this, kind))
@@ -267,7 +257,14 @@ Node	*stmt(Token **token)
 {
 	Node	*node;
 
-	node = expr(token);
+	if (consume_kind(token, TK_RETURN))
+	{
+		node = calloc(1, sizeof(Node));
+		set_node_kind(node, ND_RETURN);
+		node->lhs = expr(token);
+	}
+	else
+		node = expr(token);
 	expect(token, ";");
 	return node;
 }
