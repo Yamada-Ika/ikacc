@@ -1,12 +1,6 @@
 
 #include "ikacc.h"
 
-Token	*new_token(Token *old)
-{
-	old->next = calloc(1, sizeof(Token));
-	return (old->next);
-}
-
 void	set_token_kind(Token *this, TokenKind kind)
 {
 	this->kind = kind;
@@ -37,7 +31,8 @@ Token	*new_token_num(Token *old, char **code)
 	Token	*new;
 	char	*end;
 
-	new = new_token(old);
+	new = (Token *)calloc(1, sizeof(Token));
+	old->next = new;
 	set_token_kind(new, TK_NUM);
 	set_token_str(new, *code);
 	set_val(new, strtol(*code, &end, 10));
@@ -46,28 +41,27 @@ Token	*new_token_num(Token *old, char **code)
 	return (new);
 }
 
-Token	*new_token_reserved(Token *old, char **code, int len)
+Token	*new_token(Token *old, TokenKind kind, char **code, int len)
 {
 	Token	*new;
 
-	new = new_token(old);
-	set_token_kind(new, TK_RESERVED);
+	new = (Token *)calloc(1, sizeof(Token));
+	old->next = new;
+	set_token_kind(new, kind);
 	set_token_str(new, *code);
 	set_token_len(new, len);
 	(*code) += len;
 	return (new);
 }
 
+Token	*new_token_reserved(Token *old, char **code, int len)
+{
+	return (new_token(old, TK_RESERVED, code, len));
+}
+
 Token	*new_token_ident(Token *old, char **code, int len)
 {
-	Token	*new;
-
-	new = new_token(old);
-	set_token_kind(new, TK_IDENT);
-	set_token_str(new, *code);
-	set_token_len(new, len);
-	(*code) += len;
-	return (new);
+	return (new_token(old, TK_IDENT, code, len));
 }
 
 bool	start_with(const char *s1, const char *s2)
@@ -119,16 +113,12 @@ Token	*tokenize(char *code)
 			&& !isdigit(*(code + 6))
 		)
 		{
-			cur = new_token(cur);
-			set_token_kind(cur, TK_RETURN);
-			set_token_str(cur, code);
-			set_token_len(cur, 6);
-			code += 6;
+			cur = new_token(cur, TK_RETURN, &code, 6);
 			continue ;
 		}
 		if (is_ident_char(*code))
 		{
-			cur = new_token_ident(cur, &code, calc_ident_len(code));
+			cur = new_token(cur, TK_IDENT, &code, calc_ident_len(code));
 			continue ;
 		}
 		if (isdigit(*code))
@@ -142,20 +132,18 @@ Token	*tokenize(char *code)
 			|| start_with(code, ">=")
 		)
 		{
-			cur = new_token_reserved(cur, &code, 2);
+			cur = new_token(cur, TK_RESERVED, &code, 2);
 			continue ;
 		}
 		if (strchr("+-*/()<>;=", *code) != NULL)
 		{
-			cur = new_token_reserved(cur, &code, 1);
+			cur = new_token(cur, TK_RESERVED, &code, 1);
 			continue ;
 		}
 		error_at(code, "Cannot tokenize");
 		return (NULL);
 	}
-	cur = new_token(cur);
-	set_token_kind(cur, TK_EOF);
-	set_token_str(cur, code);
+	cur = new_token(cur, TK_EOF, &code, 0);
 	return (head.next);
 }
 
