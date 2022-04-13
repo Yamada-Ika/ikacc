@@ -55,6 +55,29 @@ void	expect_kind(Token **this, TokenKind kind)
 	*this = (*this)->next;
 }
 
+Lvar	*find_lvar(Token *token)
+{
+	Lvar	*head;
+	Lvar	*at;
+
+	head = locals;
+	while (locals->next != NULL)
+	{
+		if (
+			locals->len == token->len
+			&& strncmp(locals->name, token->str, locals->len) == 0
+		)
+		{
+			at = locals;
+			locals = head;
+			return at;
+		}
+		locals = locals->next;
+	}
+	locals = head;
+	return NULL;
+}
+
 Node	*primary(Token **token)
 {
 	Node	*node;
@@ -76,7 +99,23 @@ Node	*primary(Token **token)
 	{
 		node = new_node(NULL, NULL);
 		set_node_kind(node, ND_LVAR);
-		node->offset = ((*token)->str[0] - 'a' + 1) * 8;
+
+		Lvar *lvar = find_lvar(*token);
+		if (lvar == NULL) // lvarがない
+		{
+			lvar = (Lvar *)calloc(1, sizeof(Lvar));
+			lvar->next = locals;
+			lvar->name = (*token)->str;
+			lvar->len = (*token)->len;
+			lvar->offset = locals->offset + 8;
+			node->offset = lvar->offset;
+			locals = lvar;
+		}
+		else // ある
+		{
+			node->offset = lvar->offset;
+		}
+
 		expect_kind(token, TK_IDENT);
 		return node;
 	}

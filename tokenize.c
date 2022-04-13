@@ -75,6 +75,27 @@ bool	start_with(const char *s1, const char *s2)
 	return (strncmp(s1, s2, strlen(s2)) == 0);
 }
 
+bool	is_ident_char(const char c)
+{
+	return (
+		isalpha(c)
+		|| c == '_'
+	);
+}
+
+int	calc_ident_len(const char *code)
+{
+	int	len;
+
+	len = 0;
+	while (is_ident_char(*code))
+	{
+		len++;
+		code++;
+	}
+	return len;
+}
+
 Token	*tokenize(char *code)
 {
 	Token	head;
@@ -92,9 +113,9 @@ Token	*tokenize(char *code)
 			code++;
 			continue ;
 		}
-		if ('a' <= *code && *code <= 'z')
+		if (is_ident_char(*code))
 		{
-			cur = new_token_ident(cur, &code, 1);
+			cur = new_token_ident(cur, &code, calc_ident_len(code));
 			continue ;
 		}
 		if (isdigit(*code))

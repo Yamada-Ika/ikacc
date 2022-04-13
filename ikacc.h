@@ -12,6 +12,7 @@
 # define PS(s) fprintf(stderr, "%s\n", s)
 # define PP(p) fprintf(stderr, "%p\n", p)
 # define PD(d) fprintf(stderr, "%d\n", d)
+# define PLVAR(l) fprintf(stderr, "%.*s\n", l->len, l->name)
 
 typedef enum e_TokenKind
 {
@@ -57,9 +58,22 @@ struct Node {
 	int offset;    // kindがND_LVARの場合のみ使う
 };
 
+typedef struct Lvar Lvar;
+/**
+ * @brief ローカル変数を保持する構造体
+ * 
+ */
+struct Lvar {
+	Lvar *next;
+	char *name;
+	int len;
+	int offset;
+};
+
 // Global var
 char	*g_code;
 Node	*code[100];
+Lvar	*locals;
 
 // tokenize
 Token	*tokenize(char *code);
@@ -68,6 +82,7 @@ void	expect(Token **this, char *op);
 bool	at_eof(Token *this);
 bool	is_same_token_kind(Token *this, TokenKind kind);
 int		expect_number(Token **this);
+bool	start_with(const char *s1, const char *s2);
 
 // parse
 Node	*parse(Token *token);

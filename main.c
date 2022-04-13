@@ -22,13 +22,18 @@ void	dbg_token(Token *this)
 
 void	dbg_node(Node *this)
 {
-	if (this->kind == ND_NUM)
-	{
-		fprintf(stderr, "%d\n", this->val);
-		return ;
+	switch (this->kind) {
+		case ND_NUM:
+			fprintf(stderr, "%d\n", this->val);
+			return ;
+		case ND_LVAR:
+			fprintf(stderr, "lvar\n");
+			return ;
+		case ND_ASSIGN:
+			fprintf(stderr, "%s\n", "=");
+			return ;
 	}
-	if (this == NULL)
-		return ;
+
 	dbg_node(this->lhs);
 	dbg_node(this->rhs);
 
@@ -45,9 +50,44 @@ void	dbg_node(Node *this)
 		case ND_DIV:
 			fprintf(stderr, "%c\n", '/');
 			break ;
+		case ND_LT:
+			fprintf(stderr, "%s\n", "<");
+			break ;
+		case ND_LE:
+			fprintf(stderr, "%s\n", "<=");
+			break ;
+		case ND_EQ:
+			fprintf(stderr, "%s\n", "==");
+			break ;
+		case ND_NE:
+			fprintf(stderr, "%s\n", "<=");
+			break ;
 	}
 
 	// exit(1);
+}
+
+int	count_lvar_num(void)
+{
+	int	cnt;
+
+	cnt = 0;
+	while (locals != NULL)
+	{
+		cnt++;
+		locals = locals->next;
+	}
+	return cnt;
+}
+
+int	allocate_lvar_space(void)
+{
+	int	cnt_lvar;
+
+	cnt_lvar = count_lvar_num();
+	if (cnt_lvar == 0)
+		return 0;
+	return (cnt_lvar - 1) * 8;
 }
 
 int	main(int argc, char **argv)
@@ -55,14 +95,20 @@ int	main(int argc, char **argv)
 	if (argc != 2)
 		error("error: invalid argument");
 
+	// Initialize global vars
 	g_code = argv[1];
+	locals = (Lvar *)calloc(1, sizeof(Lvar));
+
 	Token	*token = tokenize(argv[1]);
 	// dbg_token(token);
 
 	Node	*node = parse(token);
 	// PP(node);
 	// fprintf(stderr, "Start dbg_node\n");
-	// dbg_node(node);
+	// for (int i = 0; code[i] != NULL; i++)
+	// {
+	// 	dbg_node(code[i]);
+	// }
 	// fprintf(stderr, "End dbg_node\n");
 
 	printf(".intel_syntax noprefix\n");
@@ -72,7 +118,7 @@ int	main(int argc, char **argv)
 	// Prologue
 	printf("\tpush rbp\n");
 	printf("\tmov rbp, rsp\n");
-	printf("\tsub rsp, 208\n"); // Allocate space 26 (variables) * 8 (bit)
+	printf("\tsub rsp, %d\n", allocate_lvar_space()); // Allocate space 26 (variables) * 8 (bit)
 
 	for (int i = 0; code[i] != NULL; i++)
 	{
