@@ -24,7 +24,6 @@ typedef enum e_TokenKind
 	TK_WHILE,		// while
 	TK_FOR,			// for
 	TK_BLOCK,		// {,}
-	TK_FUNC,		// function
 	TK_IDENT,		// identifer
 	TK_NUM,			// 整数トークン
 	TK_EOF,			// 入力の終わりを表すトークン
@@ -107,6 +106,7 @@ Lvar	*locals;
 // tokenize
 Token	*tokenize(char *code);
 bool	consume(Token **this, char *op);
+bool	consume_next(Token **this, char *op);
 bool	consume_kind(Token **this, TokenKind kind);
 void	expect(Token **this, char *op);
 bool	at_eof(Token *this);

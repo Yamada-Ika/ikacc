@@ -139,16 +139,6 @@ Token	*tokenize(char *code)
 			cur = new_token(cur, TK_RETURN, &code, 6);
 			continue ;
 		}
-		// foo(a, b, c)
-		if (is_ident_char(*code)
-			&& code[calc_ident_len(code)] == '('
-			&& code[calc_ident_len(code) + 1] == ')'
-		)
-		{
-			cur = new_token(cur, TK_FUNC, &code, calc_ident_len(code));
-			code += 2;
-			continue ;
-		}
 		if (is_ident_char(*code))
 		{
 			cur = new_token(cur, TK_IDENT, &code, calc_ident_len(code));
@@ -235,4 +225,12 @@ int	expect_number(Token **this)
 	n = get_val(*this);
 	*this = (*this)->next;
 	return (n);
+}
+
+bool	consume_next(Token **this, char *op)
+{
+	if (!is_same_token_str((*this)->next, op))
+		return (false);
+	*this = (*this)->next->next;
+	return (true);
 }

@@ -111,7 +111,7 @@ int	main(int argc, char **argv)
 	locals = (Lvar *)calloc(1, sizeof(Lvar));
 
 	Token	*token = tokenize(argv[1]);
-	dbg_token(token);
+	// dbg_token(token);
 
 	Node	*node = parse(token);
 	// PP(node);
