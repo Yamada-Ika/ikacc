@@ -4,7 +4,7 @@ assert() {
   input="$2"
 
   ./ikacc "$input" > tmp.s
-  cc -o tmp tmp.s
+  cc -o tmp tmp.s test/*.c
   ./tmp
   actual="$?"
 
@@ -16,7 +16,7 @@ assert() {
   fi
 }
 
-assert 1 "{ return 1; }"
+assert 1 "{ foo(); return 1; }"
 assert 10 "if (1) {
     a = 10;
     b = 2;
