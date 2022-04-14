@@ -101,7 +101,7 @@ struct Lvar {
 
 // Global var
 char	*g_code;
-Node	*code[100];
+Vector	*code;
 Lvar	*locals;
 
 // tokenize
@@ -116,7 +116,8 @@ int		expect_number(Token **this);
 bool	start_with(const char *s1, const char *s2);
 
 // parse
-Node	*parse(Token *token);
+// Node	*parse(Token *token);
+Vector	*parse(Token *token);
 
 // codegen
 void	gen(Node *node);

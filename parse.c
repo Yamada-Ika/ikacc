@@ -354,7 +354,7 @@ Node	*stmt(Token **token)
 	return node;
 }
 
-Node	*program(Token **token)
+Vector	*program(Token **token)
 {
 	size_t	i;
 
@@ -362,14 +362,13 @@ Node	*program(Token **token)
 	i = 0;
 	while (!at_eof(*token))
 	{
-		code[i] = stmt(token);
+		vec_push(&(code), stmt(token));
 		i++;
 	}
-	code[i] = NULL;
-	return code[0];
+	return code;
 }
 
-Node	*parse(Token *token)
+Vector	*parse(Token *token)
 {
 	// DBG();
 	return (program(&token));
