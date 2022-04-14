@@ -272,15 +272,6 @@ Node	*expr(Token **token)
 	return assign(token);
 }
 
-// bool	consume_next(Token **this, const char *op)
-// {
-// 	if (!is_same_token_kind((*this)->next, TK_RESERVED)
-// 		|| !is_same_token_str((*this)->next, op))
-// 		return (false);
-// 	*this = (*this)->next;
-// 	return (true);
-// }
-
 Vector	*vec_new(void)
 {
 	Vector	*new;
