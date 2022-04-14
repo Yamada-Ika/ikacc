@@ -13,6 +13,7 @@
 # define PP(p) fprintf(stderr, "%p\n", p)
 # define PD(d) fprintf(stderr, "%d\n", d)
 # define PLVAR(l) fprintf(stderr, "%.*s\n", l->len, l->name)
+# define PTKSTR(t) fprintf(stderr, "%.*s\n", t->len, t->str)
 
 typedef enum e_TokenKind
 {
@@ -22,6 +23,7 @@ typedef enum e_TokenKind
 	TK_ELSE,		// else
 	TK_WHILE,		// while
 	TK_FOR,			// for
+	TK_BLOCK,		// {,}
 	TK_IDENT,		// identifer
 	TK_NUM,			// 整数トークン
 	TK_EOF,			// 入力の終わりを表すトークン
@@ -55,8 +57,15 @@ typedef enum {
 	ND_ELSE, // else
 	ND_WHILE, // while
 	ND_FOR, // for
+	ND_BLOCK, // {,}
 	ND_RETURN, // return
 } NodeKind;
+
+typedef struct Vector {
+	void	**data;
+	int		capacity;
+	int		len;
+}	Vector;
 
 typedef struct Node Node;
 // 抽象構文木のノードの型
@@ -69,6 +78,7 @@ struct Node {
 	Node *cond;     // condition
 	Node *then;     // then
 	Node *els;     // else
+	Vector *stmts;
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
 };

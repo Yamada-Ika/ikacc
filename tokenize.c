@@ -109,6 +109,11 @@ Token	*tokenize(char *code)
 			code++;
 			continue ;
 		}
+		if (*code == '{' || *code == '}')
+		{
+			cur = new_token(cur, TK_BLOCK, &code, 1);
+			continue ;
+		}
 		if (is_keyword(code, "if"))
 		{
 			cur = new_token(cur, TK_IF, &code, 2);
@@ -196,8 +201,7 @@ bool	consume_kind(Token **this, TokenKind kind)
 
 bool	consume(Token **this, char *op)
 {
-	if (!is_same_token_kind(*this, TK_RESERVED)
-		|| !is_same_token_str(*this, op))
+	if (!is_same_token_str(*this, op))
 		return (false);
 	*this = (*this)->next;
 	return (true);
@@ -205,8 +209,7 @@ bool	consume(Token **this, char *op)
 
 void	expect(Token **this, char *op)
 {
-	if (!is_same_token_kind(*this, TK_RESERVED)
-		|| !is_same_token_str(*this, op))
+	if (!is_same_token_str(*this, op))
 		error_at((*this)->str, "expect %s, but got %c\n", op, (*this)->str[0]);
 	*this = (*this)->next;
 }

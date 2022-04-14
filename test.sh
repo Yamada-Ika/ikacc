@@ -16,6 +16,16 @@ assert() {
   fi
 }
 
+assert 1 "{ return 1; }"
+assert 10 "if (1) {
+    a = 10;
+    b = 2;
+    return a;
+} else {
+    a = 1;
+    b = 3;
+    return b;
+}"
 assert 13 "a = 10; for (b = 0; b < 3; b = b + 1) a = a + 1; a;"
 assert 11 "a = 10; for (b = 0; b < 3; b = b + 1) if (a == 11) return a; else a = a + 1; a;"
 assert 13 "a = 10; b = 0; for (; b < 3; b = b + 1) a = a + 1; a;"

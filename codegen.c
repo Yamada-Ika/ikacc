@@ -20,8 +20,13 @@ void	gen(Node *node)
 		return ;
 
 	switch (node->kind) {
-		case ND_IF:
-			{
+		case ND_BLOCK: {
+			for (int i = 0; i < node->stmts->len; i++) {
+				gen(node->stmts->data[i]);
+				printf("\tpop rax\n");
+			}
+		}
+		case ND_IF: {
 				int if_label = label;
 				label++;
 				gen(node->cond);
@@ -34,10 +39,9 @@ void	gen(Node *node)
 				if (node->els != NULL)
 					gen(node->els);
 				printf(".Lend%d:\n", if_label);
+				return ;
 			}
-			return ;
-		case ND_WHILE:
-			{
+		case ND_WHILE: {
 				int while_label = label;
 				label++;
 				printf(".Lbegin%d:\n", while_label);
@@ -48,10 +52,9 @@ void	gen(Node *node)
 				gen(node->then);
 				printf("\tjmp .Lbegin%d\n", while_label);
 				printf(".Lend%d:\n", while_label);
+				return ;
 			}
-			return ;
-		case ND_FOR:
-			{
+		case ND_FOR: {
 				int for_label = label;
 				label++;
 				gen(node->init);
@@ -67,25 +70,28 @@ void	gen(Node *node)
 				gen(node->step);
 				printf("\tjmp .Lbegin%d\n", for_label);
 				printf(".Lend%d:\n", for_label);
+				return ;
 			}
-			return ;
-		case ND_RETURN:
+		case ND_RETURN: {
 			gen(node->lhs);
 			printf("\tpop rax\n");
 			printf("\tmov rsp, rbp\n");
 			printf("\tpop rbp\n");
 			printf("\tret\n");
 			return ;
-		case ND_NUM:
+		}
+		case ND_NUM: {
 			printf("\tpush %d\n", node->val);
 			return ;
-		case ND_LVAR:
+		}
+		case ND_LVAR: {
 			gen_lvar(node);
 			printf("\tpop rax\n");
 			printf("\tmov rax, [rax]\n");
 			printf("\tpush rax\n");
 			return ;
-		case ND_ASSIGN:
+		}
+		case ND_ASSIGN: {
 			gen_lvar(node->lhs);
 			gen(node->rhs);
 			printf("\tpop rdi\n");
@@ -93,6 +99,7 @@ void	gen(Node *node)
 			printf("\tmov [rax], rdi\n");
 			printf("\tpush rdi\n");
 			return ;
+		}
 	}
 
 	gen(node->lhs);

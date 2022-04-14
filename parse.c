@@ -262,11 +262,43 @@ Node	*expr(Token **token)
 // 	return (true);
 // }
 
+Vector	*vec_new(void)
+{
+	Vector	*new;
+
+	new = (Vector *)calloc(1, sizeof(Vector));
+	new->data = (void **)calloc(10, sizeof(void *));
+	new->capacity = 10;
+	new->len = 0;
+	return new;
+}
+
+void	vec_push(Vector *this, void *data)
+{
+	if (this->len == this->capacity - 1)
+	{
+		this->data = realloc(this->data, sizeof(void *) * (this->capacity + 10));
+		this->capacity += 10;
+	}
+	this->data[this->len] = data;
+	this->len++;
+}
+
 Node	*stmt(Token **token)
 {
 	Node	*node;
 
-	if (consume_kind(token, TK_IF))
+	if (consume(token, "{"))
+	{
+		node = calloc(1, sizeof(Node));
+		set_node_kind(node, ND_BLOCK);
+		node->stmts = vec_new();
+		while (!consume(token, "}"))
+		{
+			vec_push(node->stmts, stmt(token));
+		}
+	}
+	else if (consume_kind(token, TK_IF))
 	{
 		expect(token, "(");
 		node = calloc(1, sizeof(Node));
@@ -306,7 +338,6 @@ Node	*stmt(Token **token)
 			node->step = expr(token);
 			expect(token, ")");
 		}
-		// expect(token, ")");
 		node->then = stmt(token);
 	}
 	else if (consume_kind(token, TK_RETURN))

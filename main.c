@@ -20,6 +20,8 @@ void	dbg_token(Token *this)
 			fprintf(stderr, "TK_FOR      : for\n");
 		else if (is_same_token_kind(this, TK_RETURN))
 			fprintf(stderr, "TK_RETURN   : return\n");
+		else if (is_same_token_kind(this, TK_BLOCK))
+			fprintf(stderr, "TK_BLOCK    : %.*s\n", this->len, this->str);
 		this = this->next;
 	}
 
