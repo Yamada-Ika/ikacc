@@ -24,6 +24,7 @@ typedef enum e_TokenKind
 	TK_WHILE,		// while
 	TK_FOR,			// for
 	TK_BLOCK,		// {,}
+	TK_FUNC,		// function
 	TK_IDENT,		// identifer
 	TK_NUM,			// 整数トークン
 	TK_EOF,			// 入力の終わりを表すトークン
@@ -51,6 +52,7 @@ typedef enum {
 	ND_LT, // <
 	ND_LE, // <=
 	ND_ASSIGN, // =
+	ND_FUNC, // function
 	ND_LVAR, // local var
 	ND_NUM, // 整数
 	ND_IF, // if
@@ -81,6 +83,8 @@ struct Node {
 	Vector *stmts;
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
+	char *name;    // kindがND_FUNCの場合のみ使う
+	int len;    // kindがND_FUNCの場合のみ使う
 };
 
 typedef struct Lvar Lvar;

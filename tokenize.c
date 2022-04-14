@@ -139,6 +139,16 @@ Token	*tokenize(char *code)
 			cur = new_token(cur, TK_RETURN, &code, 6);
 			continue ;
 		}
+		// foo(a, b, c)
+		if (is_ident_char(*code)
+			&& code[calc_ident_len(code)] == '('
+			&& code[calc_ident_len(code) + 1] == ')'
+		)
+		{
+			cur = new_token(cur, TK_FUNC, &code, calc_ident_len(code));
+			code += 2;
+			continue ;
+		}
 		if (is_ident_char(*code))
 		{
 			cur = new_token(cur, TK_IDENT, &code, calc_ident_len(code));

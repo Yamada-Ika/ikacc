@@ -72,6 +72,7 @@ Node	*primary(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	if (consume(token, "("))
 	{
 		node = expr(token);
@@ -83,6 +84,15 @@ Node	*primary(Token **token)
 		node = new_node(NULL, NULL);
 		set_node_kind(node, ND_NUM);
 		set_node_val(node, expect_number(token));
+		return node;
+	}
+	if (is_same_token_kind(*token, TK_FUNC))
+	{
+		node = new_node(NULL, NULL);
+		set_node_kind(node, ND_FUNC);
+		node->name = (*token)->str;
+		node->len = (*token)->len;
+		expect_kind(token, TK_FUNC);
 		return node;
 	}
 	if (is_same_token_kind(*token, TK_IDENT))
@@ -116,6 +126,7 @@ Node	*unary(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	if (consume(token, "+"))
 		return primary(token);
 	if (consume(token, "-"))
@@ -131,6 +142,7 @@ Node	*mul(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	node = unary(token);
 	while (true)
 	{
@@ -155,6 +167,7 @@ Node	*add(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	node = mul(token);
 	while (true)
 	{
@@ -179,6 +192,7 @@ Node	*relational(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	node = add(token);
 	while (true)
 	{
@@ -214,6 +228,7 @@ Node	*equality(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	node = relational(token);
 	while (true)
 	{
@@ -239,6 +254,7 @@ Node	*assign(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	node = equality(token);
 	if (consume(token, "="))
 	{
@@ -250,6 +266,7 @@ Node	*assign(Token **token)
 
 Node	*expr(Token **token)
 {
+	DBG();
 	return assign(token);
 }
 
@@ -275,6 +292,7 @@ Vector	*vec_new(void)
 
 void	vec_push(Vector *this, void *data)
 {
+	DBG();
 	if (this->len == this->capacity - 1)
 	{
 		this->data = realloc(this->data, sizeof(void *) * (this->capacity + 10));
@@ -288,6 +306,7 @@ Node	*stmt(Token **token)
 {
 	Node	*node;
 
+	DBG();
 	if (consume(token, "{"))
 	{
 		node = calloc(1, sizeof(Node));
@@ -359,6 +378,7 @@ Node	*program(Token **token)
 {
 	size_t	i;
 
+	DBG();
 	i = 0;
 	while (!at_eof(*token))
 	{
@@ -371,5 +391,6 @@ Node	*program(Token **token)
 
 Node	*parse(Token *token)
 {
+	DBG();
 	return (program(&token));
 }

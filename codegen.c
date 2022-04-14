@@ -26,6 +26,10 @@ void	gen(Node *node)
 				printf("\tpop rax\n");
 			}
 		}
+		case ND_FUNC: {
+			printf("\tcall %.*s\n", node->len, node->name);
+			return ;
+		}
 		case ND_IF: {
 				int if_label = label;
 				label++;

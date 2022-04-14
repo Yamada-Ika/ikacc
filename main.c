@@ -22,6 +22,8 @@ void	dbg_token(Token *this)
 			fprintf(stderr, "TK_RETURN   : return\n");
 		else if (is_same_token_kind(this, TK_BLOCK))
 			fprintf(stderr, "TK_BLOCK    : %.*s\n", this->len, this->str);
+		else if (is_same_token_kind(this, TK_FUNC))
+			fprintf(stderr, "TK_FUNC     : %.*s\n", this->len, this->str);
 		this = this->next;
 	}
 
@@ -109,7 +111,7 @@ int	main(int argc, char **argv)
 	locals = (Lvar *)calloc(1, sizeof(Lvar));
 
 	Token	*token = tokenize(argv[1]);
-	// dbg_token(token);
+	dbg_token(token);
 
 	Node	*node = parse(token);
 	// PP(node);
