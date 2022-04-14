@@ -79,7 +79,8 @@ struct Node {
 	Node *cond;     // condition
 	Node *then;     // then
 	Node *els;     // else
-	Vector *stmts;
+	Vector *stmts; // for compound statements
+	Vector *args;  // function arguments
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
 	char *name;    // kindがND_FUNCの場合のみ使う
@@ -123,5 +124,10 @@ void	gen(Node *node);
 // error
 void	error(char *fmt, ...);
 void	error_at(char *loc, char *fmt, ...);
+
+// vector
+Vector	*vec_new(void);
+void	vec_push(Vector **this, void *data);
+void	vec_dump(Vector *this);
 
 #endif

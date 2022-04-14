@@ -16,6 +16,7 @@ assert() {
   fi
 }
 
+assert 1 "{ bar(1, 2, 3, 4, 5, 6); return 1; }"
 assert 1 "{ foo(); return 1; }"
 assert 10 "if (1) {
     a = 10;

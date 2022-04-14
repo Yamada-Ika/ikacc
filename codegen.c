@@ -28,6 +28,38 @@ void	gen(Node *node)
 			return ;
 		}
 		case ND_FUNC: {
+			if (node->args == NULL) {
+				printf("\tcall %.*s\n", node->len, node->name);
+				return ;
+			}
+			for (int i = 0; i < node->args->len; i++) {
+				switch (i) {
+				case 0:
+					gen(node->args->data[0]);
+					printf("\tpop rdi\n");
+					break;
+				case 1:
+					gen(node->args->data[1]);
+					printf("\tpop rsi\n");
+					break;
+				case 2:
+					gen(node->args->data[2]);
+					printf("\tpop rdx\n");
+					break;
+				case 3:
+					gen(node->args->data[3]);
+					printf("\tpop rcx\n");
+					break;
+				case 4:
+					gen(node->args->data[4]);
+					printf("\tpop r8\n");
+					break;
+				case 5:
+					gen(node->args->data[5]);
+					printf("\tpop r9\n");
+					break;
+				}
+			}
 			printf("\tcall %.*s\n", node->len, node->name);
 			return ;
 		}
