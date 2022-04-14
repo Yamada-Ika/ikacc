@@ -9,10 +9,17 @@ void	dbg_token(Token *this)
 		if (is_same_token_kind(this, TK_NUM))
 			fprintf(stderr, "TK_NUM      : %d\n", this->val);
 		else if (is_same_token_kind(this, TK_RESERVED))
-			fprintf(stderr, "TK_RESERVED : %s\n", this->str);
+			fprintf(stderr, "TK_RESERVED : %.*s\n", this->len, this->str);
 		else if (is_same_token_kind(this, TK_IDENT))
-			fprintf(stderr, "TK_IDENT    : %s\n", this->str);
-		fprintf(stderr, "len         : %d\n", this->len);
+			fprintf(stderr, "TK_IDENT    : %.*s\n", this->len, this->str);
+		else if (is_same_token_kind(this, TK_IF))
+			fprintf(stderr, "TK_IF       : if\n");
+		else if (is_same_token_kind(this, TK_ELSE))
+			fprintf(stderr, "TK_ELSE     : else\n");
+		else if (is_same_token_kind(this, TK_FOR))
+			fprintf(stderr, "TK_FOR      : for\n");
+		else if (is_same_token_kind(this, TK_RETURN))
+			fprintf(stderr, "TK_RETURN   : return\n");
 		this = this->next;
 	}
 

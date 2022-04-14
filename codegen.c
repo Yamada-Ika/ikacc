@@ -1,5 +1,7 @@
 #include "ikacc.h"
 
+int	label;
+
 void	gen_lvar(Node *node)
 {
 	if (node->kind != ND_LVAR)
@@ -14,7 +16,59 @@ void	gen(Node *node)
 {
 	// fprintf(stderr, "Start gen\n");
 
+	if (node == NULL)
+		return ;
+
 	switch (node->kind) {
+		case ND_IF:
+			{
+				int if_label = label;
+				label++;
+				gen(node->cond);
+				printf("\tpop rax\n");
+				printf("\tcmp rax, 0\n");
+				printf("\tje .Lelse%d\n", if_label);
+				gen(node->then);
+				printf("\tjmp .Lend%d\n", if_label);
+				printf(".Lelse%d:\n", if_label);
+				if (node->els != NULL)
+					gen(node->els);
+				printf(".Lend%d:\n", if_label);
+			}
+			return ;
+		case ND_WHILE:
+			{
+				int while_label = label;
+				label++;
+				printf(".Lbegin%d:\n", while_label);
+				gen(node->cond);
+				printf("\tpop rax\n");
+				printf("\tcmp rax, 0\n");
+				printf("\tje .Lend%d\n", while_label);
+				gen(node->then);
+				printf("\tjmp .Lbegin%d\n", while_label);
+				printf(".Lend%d:\n", while_label);
+			}
+			return ;
+		case ND_FOR:
+			{
+				int for_label = label;
+				label++;
+				gen(node->init);
+				printf(".Lbegin%d:\n", for_label);
+				if (node->cond != NULL)
+					gen(node->cond);
+				else
+					printf("\tpush 1\n");
+				printf("\tpop rax\n");
+				printf("\tcmp rax, 0\n");
+				printf("\tje .Lend%d\n", for_label);
+				gen(node->then);
+				gen(node->step);
+				printf("\tjmp .Lbegin%d\n", for_label);
+				printf(".Lend%d:\n", for_label);
+			}
+			return ;
 		case ND_RETURN:
 			gen(node->lhs);
 			printf("\tpop rax\n");

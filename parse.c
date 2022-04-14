@@ -253,19 +253,74 @@ Node	*expr(Token **token)
 	return assign(token);
 }
 
+// bool	consume_next(Token **this, const char *op)
+// {
+// 	if (!is_same_token_kind((*this)->next, TK_RESERVED)
+// 		|| !is_same_token_str((*this)->next, op))
+// 		return (false);
+// 	*this = (*this)->next;
+// 	return (true);
+// }
+
 Node	*stmt(Token **token)
 {
 	Node	*node;
 
-	if (consume_kind(token, TK_RETURN))
+	if (consume_kind(token, TK_IF))
+	{
+		expect(token, "(");
+		node = calloc(1, sizeof(Node));
+		set_node_kind(node, ND_IF);
+		node->cond = expr(token);
+		expect(token, ")");
+		node->then = stmt(token);
+		if (consume_kind(token, TK_ELSE))
+			node->els = stmt(token);
+	}
+	else if (consume_kind(token, TK_WHILE))
+	{
+		expect(token, "(");
+		node = calloc(1, sizeof(Node));
+		set_node_kind(node, ND_WHILE);
+		node->cond = expr(token);
+		expect(token, ")");
+		node->then = stmt(token);
+	}
+	else if (consume_kind(token, TK_FOR))
+	{
+		expect(token, "(");
+		node = calloc(1, sizeof(Node));
+		set_node_kind(node, ND_FOR);
+		if (!consume(token, ";"))
+		{
+			node->init = expr(token);
+			expect(token, ";");
+		}
+		if (!consume(token, ";"))
+		{
+			node->cond = expr(token);
+			expect(token, ";");
+		}
+		if (!consume(token, ")"))
+		{
+			node->step = expr(token);
+			expect(token, ")");
+		}
+		// expect(token, ")");
+		node->then = stmt(token);
+	}
+	else if (consume_kind(token, TK_RETURN))
 	{
 		node = calloc(1, sizeof(Node));
 		set_node_kind(node, ND_RETURN);
 		node->lhs = expr(token);
+		expect(token, ";");
 	}
 	else
+	{
 		node = expr(token);
-	expect(token, ";");
+		expect(token, ";");
+	}
 	return node;
 }
 

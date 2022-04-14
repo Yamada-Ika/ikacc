@@ -54,16 +54,6 @@ Token	*new_token(Token *old, TokenKind kind, char **code, int len)
 	return (new);
 }
 
-Token	*new_token_reserved(Token *old, char **code, int len)
-{
-	return (new_token(old, TK_RESERVED, code, len));
-}
-
-Token	*new_token_ident(Token *old, char **code, int len)
-{
-	return (new_token(old, TK_IDENT, code, len));
-}
-
 bool	start_with(const char *s1, const char *s2)
 {
 	return (strncmp(s1, s2, strlen(s2)) == 0);
@@ -90,6 +80,18 @@ int	calc_ident_len(const char *code)
 	return len;
 }
 
+bool	is_keyword(const char *code, const char *key)
+{
+	size_t	len;
+
+	len = strlen(key);
+	return (
+		start_with(code, key)
+		&& !is_ident_char(*(code + len))
+		&& !isdigit(*(code + len))
+	);
+}
+
 Token	*tokenize(char *code)
 {
 	Token	head;
@@ -107,11 +109,27 @@ Token	*tokenize(char *code)
 			code++;
 			continue ;
 		}
-		if (
-			start_with(code, "return")
-			&& !is_ident_char(*(code + 6))
-			&& !isdigit(*(code + 6))
-		)
+		if (is_keyword(code, "if"))
+		{
+			cur = new_token(cur, TK_IF, &code, 2);
+			continue ;
+		}
+		if (is_keyword(code, "else"))
+		{
+			cur = new_token(cur, TK_ELSE, &code, 4);
+			continue ;
+		}
+		if (is_keyword(code, "while"))
+		{
+			cur = new_token(cur, TK_WHILE, &code, 5);
+			continue ;
+		}
+		if (is_keyword(code, "for"))
+		{
+			cur = new_token(cur, TK_FOR, &code, 3);
+			continue ;
+		}
+		if (is_keyword(code, "return"))
 		{
 			cur = new_token(cur, TK_RETURN, &code, 6);
 			continue ;

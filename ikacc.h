@@ -18,6 +18,10 @@ typedef enum e_TokenKind
 {
 	TK_RESERVED,	// +,-,*,/,(,),<,>,<=,>=,==,!=
 	TK_RETURN,		// return
+	TK_IF,			// if
+	TK_ELSE,		// else
+	TK_WHILE,		// while
+	TK_FOR,			// for
 	TK_IDENT,		// identifer
 	TK_NUM,			// 整数トークン
 	TK_EOF,			// 入力の終わりを表すトークン
@@ -47,6 +51,10 @@ typedef enum {
 	ND_ASSIGN, // =
 	ND_LVAR, // local var
 	ND_NUM, // 整数
+	ND_IF, // if
+	ND_ELSE, // else
+	ND_WHILE, // while
+	ND_FOR, // for
 	ND_RETURN, // return
 } NodeKind;
 
@@ -56,6 +64,11 @@ struct Node {
 	NodeKind kind; // ノードの型
 	Node *lhs;     // 左辺
 	Node *rhs;     // 右辺
+	Node *init;     // initialization for for statement
+	Node *step;     // step for for statement
+	Node *cond;     // condition
+	Node *then;     // then
+	Node *els;     // else
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
 };
