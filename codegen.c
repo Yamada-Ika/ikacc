@@ -25,6 +25,7 @@ void	gen(Node *node)
 				gen(node->stmts->data[i]);
 				printf("\tpop rax\n");
 			}
+			return ;
 		}
 		case ND_FUNC: {
 			printf("\tcall %.*s\n", node->len, node->name);
