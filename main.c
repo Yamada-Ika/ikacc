@@ -111,7 +111,7 @@ int	main(int argc, char **argv)
 	Token	*token = tokenize(argv[1]);
 	// dbg_token(token);
 
-	Vector	*tmp_code = parse(token);
+	Vector	*nodes = parse(token);
 	// PP(node);
 	// fprintf(stderr, "Start dbg_node\n");
 	// for (int i = 0; code[i] != NULL; i++)
@@ -129,9 +129,9 @@ int	main(int argc, char **argv)
 	printf("\tmov rbp, rsp\n");
 	printf("\tsub rsp, %d\n", allocate_lvar_space()); // Allocate space 26 (variables) * 8 (bit)
 
-	for (int i = 0; i < tmp_code->len; i++)
+	for (int i = 0; i < nodes->len; i++)
 	{
-		gen(tmp_code->data[i]);
+		gen(nodes->data[i]);
 		printf("\tpop rax\n");
 	}
 

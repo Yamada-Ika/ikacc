@@ -101,7 +101,7 @@ struct Lvar {
 
 // Global var
 char	*g_code;
-Vector	*code;
+Vector	*nodes;
 Lvar	*locals;
 
 // tokenize

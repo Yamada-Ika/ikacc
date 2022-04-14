@@ -362,10 +362,10 @@ Vector	*program(Token **token)
 	i = 0;
 	while (!at_eof(*token))
 	{
-		vec_push(&(code), stmt(token));
+		vec_push(&(nodes), stmt(token));
 		i++;
 	}
-	return code;
+	return nodes;
 }
 
 Vector	*parse(Token *token)
