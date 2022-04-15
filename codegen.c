@@ -20,18 +20,50 @@ void	gen(Node *node)
 		return ;
 
 	switch (node->kind) {
+		case ND_FUNCDECL: {
+			printf("%.*s:\n", node->len, node->name);
+			printf("\tpush rbp\n");
+			printf("\tmov rbp, rsp\n");
+			printf("\tsub rsp, %d\n", allocate_lvar_space());
+			for (int i = 0; i < node->args->len; i++) {
+				gen_lvar(node->args->data[i]); // varのアドレスがスタックトップに置かれる
+				printf("\tpop rax  # %d\n", __LINE__);
+				switch (i) {
+				case 0:
+					printf("\tmov [rax], rdi\n");
+					break ;
+				case 1:
+					printf("\tmov [rax], rsi\n");
+					break;
+				case 2:
+					printf("\tmov [rax], rdx\n");
+					break;
+				case 3:
+					printf("\tmov [rax], rcx\n");
+					break;
+				case 4:
+					printf("\tmov [rax], r8\n");
+					break;
+				case 5:
+					printf("\tmov [rax], r9\n");
+					break;
+				}
+			}
+			gen(node->body);
+			// printf("\tpop rax  # %d\n", __LINE__);
+			printf("\tmov rsp, rbp\n");
+			printf("\tpop rbp\n");
+			printf("\tret\n");
+			return ;
+		}
 		case ND_BLOCK: {
 			for (int i = 0; i < node->stmts->len; i++) {
 				gen(node->stmts->data[i]);
-				printf("\tpop rax\n");
+				printf("\tpop rax  # %d\n", __LINE__); // return がないとどんどんスタックに値が積まれるのでpopしておく
 			}
 			return ;
 		}
-		case ND_FUNC: {
-			if (node->args == NULL) {
-				printf("\tcall %.*s\n", node->len, node->name);
-				return ;
-			}
+		case ND_FUNCCALL: {
 			for (int i = 0; i < node->args->len; i++) {
 				switch (i) {
 				case 0:
@@ -61,13 +93,14 @@ void	gen(Node *node)
 				}
 			}
 			printf("\tcall %.*s\n", node->len, node->name);
+			printf("\tpush rax\n");
 			return ;
 		}
 		case ND_IF: {
 				int if_label = label;
 				label++;
 				gen(node->cond);
-				printf("\tpop rax\n");
+				printf("\tpop rax  # %d\n", __LINE__);
 				printf("\tcmp rax, 0\n");
 				printf("\tje .Lelse%d\n", if_label);
 				gen(node->then);
@@ -83,7 +116,7 @@ void	gen(Node *node)
 				label++;
 				printf(".Lbegin%d:\n", while_label);
 				gen(node->cond);
-				printf("\tpop rax\n");
+				printf("\tpop rax  # %d\n", __LINE__);
 				printf("\tcmp rax, 0\n");
 				printf("\tje .Lend%d\n", while_label);
 				gen(node->then);
@@ -100,7 +133,7 @@ void	gen(Node *node)
 					gen(node->cond);
 				else
 					printf("\tpush 1\n");
-				printf("\tpop rax\n");
+				printf("\tpop rax  # %d\n", __LINE__);
 				printf("\tcmp rax, 0\n");
 				printf("\tje .Lend%d\n", for_label);
 				gen(node->then);
@@ -111,7 +144,7 @@ void	gen(Node *node)
 			}
 		case ND_RETURN: {
 			gen(node->lhs);
-			printf("\tpop rax\n");
+			printf("\tpop rax  # %d\n", __LINE__);
 			printf("\tmov rsp, rbp\n");
 			printf("\tpop rbp\n");
 			printf("\tret\n");
@@ -123,7 +156,7 @@ void	gen(Node *node)
 		}
 		case ND_LVAR: {
 			gen_lvar(node);
-			printf("\tpop rax\n");
+			printf("\tpop rax  # %d\n", __LINE__);
 			printf("\tmov rax, [rax]\n");
 			printf("\tpush rax\n");
 			return ;
@@ -132,7 +165,7 @@ void	gen(Node *node)
 			gen_lvar(node->lhs);
 			gen(node->rhs);
 			printf("\tpop rdi\n");
-			printf("\tpop rax\n");
+			printf("\tpop rax  # %d\n", __LINE__);
 			printf("\tmov [rax], rdi\n");
 			printf("\tpush rdi\n");
 			return ;
@@ -143,7 +176,7 @@ void	gen(Node *node)
 	gen(node->rhs);
 
 	printf("\tpop rdi\n");
-	printf("\tpop rax\n");
+	printf("\tpop rax  # %d\n", __LINE__);
 	switch (node->kind) {
 		case ND_ADD:
 			printf("\tadd rax, rdi\n");

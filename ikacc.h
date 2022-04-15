@@ -52,7 +52,8 @@ typedef enum {
 	ND_LT, // <
 	ND_LE, // <=
 	ND_ASSIGN, // =
-	ND_FUNC, // function
+	ND_FUNCDECL, // function declaration
+	ND_FUNCCALL, // function call
 	ND_LVAR, // local var
 	ND_NUM, // 整数
 	ND_IF, // if
@@ -80,12 +81,13 @@ struct Node {
 	Node *cond;     // condition
 	Node *then;     // then
 	Node *els;     // else
+	Node *body;     // for function body
 	Vector *stmts; // for compound statements
 	Vector *args;  // function arguments
 	int val;       // kindがND_NUMの場合のみ使う
 	int offset;    // kindがND_LVARの場合のみ使う
-	char *name;    // kindがND_FUNCの場合のみ使う
-	int len;    // kindがND_FUNCの場合のみ使う
+	char *name;    // kindがND_FUNCCALLの場合のみ使う
+	int len;    // kindがND_FUNCCALLの場合のみ使う
 };
 
 typedef struct Lvar Lvar;
@@ -132,5 +134,8 @@ void	error_at(char *loc, char *fmt, ...);
 Vector	*vec_new(void);
 void	vec_push(Vector **this, void *data);
 void	vec_dump(Vector *this);
+
+// others
+int	allocate_lvar_space(void);
 
 #endif

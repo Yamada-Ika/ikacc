@@ -122,23 +122,23 @@ int	main(int argc, char **argv)
 
 	printf(".intel_syntax noprefix\n");
 	printf(".globl main\n");
-	printf("main:\n");
+	// printf("main:\n");
 
-	// Prologue
-	printf("\tpush rbp\n");
-	printf("\tmov rbp, rsp\n");
-	printf("\tsub rsp, %d\n", allocate_lvar_space()); // Allocate space 26 (variables) * 8 (bit)
+	// // Prologue
+	// printf("\tpush rbp\n");
+	// printf("\tmov rbp, rsp\n");
+	// printf("\tsub rsp, %d\n", allocate_lvar_space()); // Allocate space 26 (variables) * 8 (bit)
 
 	for (int i = 0; i < nodes->len; i++)
 	{
 		gen(nodes->data[i]);
-		printf("\tpop rax\n");
+		// printf("\tpop rax\n");
 	}
 
 	// Epilogue
-	printf("\tmov rsp, rbp\n");
-	printf("\tpop rbp\n");
+	// printf("\tmov rsp, rbp\n");
+	// printf("\tpop rbp\n");
 	
-	printf("\tret\n");
+	// printf("\tret\n");
 	return (0);
 }

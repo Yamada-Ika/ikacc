@@ -3,19 +3,17 @@
 
 Node	*assign(Token **token);
 Node	*expr(Token **token);
+Node	*stmt(Token **token);
 
-void	set_node_kind(Node *this, NodeKind kind)
-{
+void	set_node_kind(Node *this, NodeKind kind) {
 	this->kind = kind;
 }
 
-void	set_node_val(Node *this, int val)
-{
+void	set_node_val(Node *this, int val) {
 	this->val = val;
 }
 
-Node	*new_node(Node *lhs, Node *rhs)
-{
+Node	*new_node(Node *lhs, Node *rhs) {
 	Node	*new;
 
 	new = calloc(1, sizeof(Node));
@@ -24,8 +22,7 @@ Node	*new_node(Node *lhs, Node *rhs)
 	return new;
 }
 
-Node	*new_node_num(int val)
-{
+Node	*new_node_num(int val) {
 	Node	*new;
 
 	new = calloc(1, sizeof(Node));
@@ -34,20 +31,17 @@ Node	*new_node_num(int val)
 	return new;
 }
 
-int	get_node_num(Node *node)
-{
+int	get_node_num(Node *node) {
 	return (node->val);
 }
 
-void	expect_kind(Token **this, TokenKind kind)
-{
+void	expect_kind(Token **this, TokenKind kind) {
 	if (!is_same_token_kind(*this, kind))
 		error_at((*this)->str, "should be numeric");
 	*this = (*this)->next;
 }
 
-Lvar	*find_lvar(Token *token)
-{
+Lvar	*find_lvar(Token *token) {
 	Lvar	*head;
 	Lvar	*at;
 
@@ -76,8 +70,7 @@ Node	*var(Token **token) {
 	set_node_kind(node, ND_LVAR);
 
 	Lvar *lvar = find_lvar(*token);
-	if (lvar == NULL) // lvarがない
-	{
+	if (lvar == NULL) {
 		lvar = (Lvar *)calloc(1, sizeof(Lvar));
 		lvar->next = locals;
 		lvar->name = (*token)->str;
@@ -86,8 +79,7 @@ Node	*var(Token **token) {
 		node->offset = lvar->offset;
 		locals = lvar;
 	}
-	else // ある
-	{
+	else {
 		node->offset = lvar->offset;
 	}
 
@@ -103,12 +95,13 @@ Node	*funcCall(Token **token) {
 	expect_kind(token, TK_IDENT);
 	expect(token, "(");
 	node = new_node(NULL, NULL);
-	set_node_kind(node, ND_FUNC);
+	set_node_kind(node, ND_FUNCCALL);
 	node->name = tk->str;
 	node->len = tk->len;
 
 	// PNDNAME(node);
 
+	node->args = vec_new();
 	for (int cnt = 0; !consume(token, ")"); cnt++) {
 		if (cnt >= 1)
 			expect(token, ",");
@@ -121,19 +114,16 @@ Node	*funcCall(Token **token) {
 	return node;
 }
 
-Node	*primary(Token **token)
-{
+Node	*primary(Token **token) {
 	Node	*node;
 
 	// DBG();
-	if (consume(token, "("))
-	{
+	if (consume(token, "(")) {
 		node = expr(token);
 		expect(token, ")");
 		return node;
 	}
-	if (is_same_token_kind(*token, TK_NUM))
-	{
+	if (is_same_token_kind(*token, TK_NUM)) {
 		node = new_node(NULL, NULL);
 		set_node_kind(node, ND_NUM);
 		set_node_val(node, expect_number(token));
@@ -148,15 +138,13 @@ Node	*primary(Token **token)
 	error("error: Failed to parse");
 }
 
-Node	*unary(Token **token)
-{
+Node	*unary(Token **token) {
 	Node	*node;
 
 	// DBG();
 	if (consume(token, "+"))
 		return primary(token);
-	if (consume(token, "-"))
-	{
+	if (consume(token, "-")) {
 		node = new_node(new_node_num(0), primary(token));
 		set_node_kind(node, ND_SUB);
 		return node;
@@ -164,155 +152,134 @@ Node	*unary(Token **token)
 	return primary(token);
 }
 
-Node	*mul(Token **token)
-{
+Node	*mul(Token **token) {
 	Node	*node;
 
 	// DBG();
 	node = unary(token);
-	while (true)
-	{
-		if (consume(token, "*"))
-		{
+	while (true) {
+		if (consume(token, "*")) {
 			node = new_node(node, unary(token));
 			set_node_kind(node, ND_MUL);
 		}
-		else if (consume(token, "/"))
-		{
+		else if (consume(token, "/")) {
 			node = new_node(node, unary(token));
 			set_node_kind(node, ND_DIV);
 		}
-		else
-		{
+		else {
 			return node;
 		}
 	}
 }
 
-Node	*add(Token **token)
-{
+Node	*add(Token **token) {
 	Node	*node;
 
 	// DBG();
 	node = mul(token);
-	while (true)
-	{
-		if (consume(token, "+"))
-		{
+	while (true) {
+		if (consume(token, "+")) {
 			node = new_node(node, mul(token));
 			set_node_kind(node, ND_ADD);
 		}
-		else if (consume(token, "-"))
-		{
+		else if (consume(token, "-")) {
 			node = new_node(node, mul(token));
 			set_node_kind(node, ND_SUB);
 		}
-		else
-		{
+		else {
 			return node;
 		}
 	}
 }
 
-Node	*relational(Token **token)
-{
+Node	*relational(Token **token) {
 	Node	*node;
 
 	// DBG();
 	node = add(token);
-	while (true)
-	{
-		if (consume(token, "<"))
-		{
+	while (true) {
+		if (consume(token, "<")) {
 			node = new_node(node, add(token));
 			set_node_kind(node, ND_LT);
 		}
-		else if (consume(token, "<="))
-		{
+		else if (consume(token, "<=")) {
 			node = new_node(node, add(token));
 			set_node_kind(node, ND_LE);
 		}
-		else if (consume(token, ">"))
-		{
+		else if (consume(token, ">")) {
 			node = new_node(add(token), node);
 			set_node_kind(node, ND_LT);
 		}
-		else if (consume(token, ">="))
-		{
+		else if (consume(token, ">=")) {
 			node = new_node(add(token), node);
 			set_node_kind(node, ND_LE);
 		}
-		else
-		{
+		else {
 			return node;
 		}
 	}
 	return node;
 }
 
-Node	*equality(Token **token)
-{
+Node	*equality(Token **token) {
 	Node	*node;
 
 	// DBG();
 	node = relational(token);
-	while (true)
-	{
-		if (consume(token, "=="))
-		{
+	while (true) {
+		if (consume(token, "==")) {
 			node = new_node(node, relational(token));
 			set_node_kind(node, ND_EQ);
 		}
-		else if (consume(token, "!="))
-		{
+		else if (consume(token, "!=")) {
 			node = new_node(node, relational(token));
 			set_node_kind(node, ND_NE);
 		}
-		else
-		{
+		else {
 			return node;
 		}
 	}
 	return node;
 }
 
-Node	*assign(Token **token)
-{
+Node	*assign(Token **token) {
 	Node	*node;
 
 	// DBG();
 	node = equality(token);
-	if (consume(token, "="))
-	{
+	if (consume(token, "=")) {
 		node = new_node(node, assign(token));
 		set_node_kind(node, ND_ASSIGN);
 	}
 	return node;
 }
 
-Node	*expr(Token **token)
-{
+Node	*expr(Token **token) {
 	// DBG();
 	return assign(token);
 }
 
-Node	*stmt(Token **token)
-{
+Node	*blockBody(Token **token) {
 	Node	*node;
 
 	// DBG();
-	if (consume(token, "{"))
-	{
-		node = calloc(1, sizeof(Node));
-		set_node_kind(node, ND_BLOCK);
-		// node->stmts = vec_new();
-		while (!consume(token, "}"))
-		{
-			vec_push(&node->stmts, stmt(token));
-		}
+	node = calloc(1, sizeof(Node));
+	set_node_kind(node, ND_BLOCK);
+	while (!consume(token, "}")) {
+		vec_push(&node->stmts, stmt(token));
 	}
-	else if (consume_kind(token, TK_IF))
-	{
+	// DBG();
+	return node;
+}
+
+Node	*stmt(Token **token) {
+	Node	*node;
+
+	// DBG();
+	if (consume(token, "{")) {
+		return blockBody(token);
+	}
+	else if (consume_kind(token, TK_IF)) {
 		expect(token, "(");
 		node = calloc(1, sizeof(Node));
 		set_node_kind(node, ND_IF);
@@ -322,8 +289,7 @@ Node	*stmt(Token **token)
 		if (consume_kind(token, TK_ELSE))
 			node->els = stmt(token);
 	}
-	else if (consume_kind(token, TK_WHILE))
-	{
+	else if (consume_kind(token, TK_WHILE)) {
 		expect(token, "(");
 		node = calloc(1, sizeof(Node));
 		set_node_kind(node, ND_WHILE);
@@ -331,66 +297,82 @@ Node	*stmt(Token **token)
 		expect(token, ")");
 		node->then = stmt(token);
 	}
-	else if (consume_kind(token, TK_FOR))
-	{
+	else if (consume_kind(token, TK_FOR)) {
 		expect(token, "(");
 		node = calloc(1, sizeof(Node));
 		set_node_kind(node, ND_FOR);
-		if (!consume(token, ";"))
-		{
+		if (!consume(token, ";")) {
 			node->init = expr(token);
 			expect(token, ";");
 		}
-		if (!consume(token, ";"))
-		{
+		if (!consume(token, ";")) {
 			node->cond = expr(token);
 			expect(token, ";");
 		}
-		if (!consume(token, ")"))
-		{
+		if (!consume(token, ")")) {
 			node->step = expr(token);
 			expect(token, ")");
 		}
 		node->then = stmt(token);
 	}
-	else if (consume_kind(token, TK_RETURN))
-	{
+	else if (consume_kind(token, TK_RETURN)) {
 		node = calloc(1, sizeof(Node));
 		set_node_kind(node, ND_RETURN);
 		node->lhs = expr(token);
 		expect(token, ";");
 	}
-	else
-	{
+	else {
 		node = expr(token);
 		expect(token, ";");
 	}
 	return node;
 }
 
-Vector	*program(Token **token)
-{
-	size_t	i;
+// Vector	*program(Token **token) {
+// 	size_t	i;
 
-	// DBG();
-	i = 0;
-	while (!at_eof(*token))
-	{
-		vec_push(&(nodes), stmt(token));
-		i++;
-	}
-	return nodes;
+// 	// DBG();
+// 	i = 0;
+// 	while (!at_eof(*token)) {
+// 		vec_push(&(nodes), stmt(token));
+// 		i++;
+// 	}
+// 	// DBG();
+// 	return nodes;
+// }
+
+Node	*funcBody(Token **token) {
+	return blockBody(token);
 }
 
-/*
-Node	*funcDelc(Token **token) {
+Node	*funcDecl(Token **token) {
 	Node	*node;
 
 	if (is_same_token_kind(*token, TK_IDENT)) {
-		node = ident()
+		node = new_node(NULL, NULL);
+		set_node_kind(node, ND_FUNCDECL);
+		node->name = (*token)->str;
+		node->len = (*token)->len;
+
+		expect_kind(token, TK_IDENT);
 		expect(token, "(");
-		expect(token, ")");
+		node->args = vec_new();
+		for (int cnt = 0; !consume(token, ")"); cnt++) {
+			if (cnt >= 1)
+				expect(token, ",");
+			if (cnt > 5)
+				error_at((*token)->str, "error: Too many arguments");
+			vec_push(&node->args, var(token));
+		}
+		// vec_dump(node->args);
+		if (consume(token, "{"))
+			node->body = funcBody(token);
+		else
+			error("error: function body not found");
+
+		return node;
 	}
+	error("error: function declaration not found");
 }
 
 Vector	*program(Token **token) {
@@ -399,10 +381,8 @@ Vector	*program(Token **token) {
 	}
 	return nodes;
 }
-*/
 
-Vector	*parse(Token *token)
-{
+Vector	*parse(Token *token) {
 	// DBG();
 	return (program(&token));
 }

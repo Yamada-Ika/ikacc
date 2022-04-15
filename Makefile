@@ -1,7 +1,7 @@
-CFLAGS=-std=c11
+CFLAGS=-std=c11 -static
 
 ifdef WITH_DEBUG
-	CFLAGS += -g -O0
+	CFLAGS += -g -fsanitize=address
 endif
 
 SRCS	:= $(wildcard *.c)
@@ -20,7 +20,6 @@ test:
 
 debug: fclean
 	make WITH_DEBUG=1
-	make test
 
 re: fclean
 	make
