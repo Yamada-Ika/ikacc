@@ -69,6 +69,58 @@ Lvar	*find_lvar(Token *token)
 	return NULL;
 }
 
+Node	*var(Token **token) {
+	Node	*node;
+
+	node = new_node(NULL, NULL);
+	set_node_kind(node, ND_LVAR);
+
+	Lvar *lvar = find_lvar(*token);
+	if (lvar == NULL) // lvarがない
+	{
+		lvar = (Lvar *)calloc(1, sizeof(Lvar));
+		lvar->next = locals;
+		lvar->name = (*token)->str;
+		lvar->len = (*token)->len;
+		lvar->offset = locals->offset + 8;
+		node->offset = lvar->offset;
+		locals = lvar;
+	}
+	else // ある
+	{
+		node->offset = lvar->offset;
+	}
+
+	expect_kind(token, TK_IDENT);
+	return node;
+}
+
+Node	*funcCall(Token **token) {
+	Node	*node;
+	Token	*tk;
+
+	tk = *token;
+	expect_kind(token, TK_IDENT);
+	expect(token, "(");
+	node = new_node(NULL, NULL);
+	set_node_kind(node, ND_FUNC);
+	node->name = tk->str;
+	node->len = tk->len;
+
+	// PNDNAME(node);
+
+	for (int cnt = 0; !consume(token, ")"); cnt++) {
+		if (cnt >= 1)
+			expect(token, ",");
+		if (cnt > 5)
+			error_at((*token)->str, "error: Too many arguments");
+		vec_push(&node->args, assign(token));
+	}
+	// vec_dump(node->args);
+	// expect(token, ")");
+	return node;
+}
+
 Node	*primary(Token **token)
 {
 	Node	*node;
@@ -87,49 +139,11 @@ Node	*primary(Token **token)
 		set_node_val(node, expect_number(token));
 		return node;
 	}
-	if (is_same_token_kind(*token, TK_IDENT))
-	{
-		Token	*tk = *token;
-		if (consume_next(token, "("))
-		{
-			node = new_node(NULL, NULL);
-			set_node_kind(node, ND_FUNC);
-			node->name = tk->str;
-			node->len = tk->len;
-
-			for (int cnt = 0; !consume(token, ")"); cnt++) {
-				if (cnt >= 1)
-					expect(token, ",");
-				if (cnt > 5)
-					error_at((*token)->str, "error: Too many arguments");
-				vec_push(&node->args, assign(token));
-			}
-			// vec_dump(node->args);
-			// expect(token, ")");
-			return node;
+	if (is_same_token_kind(*token, TK_IDENT)) {
+		if (is_same_token_str((*token)->next, "(")) {
+			return funcCall(token);
 		}
-
-		node = new_node(NULL, NULL);
-		set_node_kind(node, ND_LVAR);
-
-		Lvar *lvar = find_lvar(*token);
-		if (lvar == NULL) // lvarがない
-		{
-			lvar = (Lvar *)calloc(1, sizeof(Lvar));
-			lvar->next = locals;
-			lvar->name = (*token)->str;
-			lvar->len = (*token)->len;
-			lvar->offset = locals->offset + 8;
-			node->offset = lvar->offset;
-			locals = lvar;
-		}
-		else // ある
-		{
-			node->offset = lvar->offset;
-		}
-
-		expect_kind(token, TK_IDENT);
-		return node;
+		return var(token);
 	}
 	error("error: Failed to parse");
 }
@@ -367,6 +381,25 @@ Vector	*program(Token **token)
 	}
 	return nodes;
 }
+
+/*
+Node	*funcDelc(Token **token) {
+	Node	*node;
+
+	if (is_same_token_kind(*token, TK_IDENT)) {
+		node = ident()
+		expect(token, "(");
+		expect(token, ")");
+	}
+}
+
+Vector	*program(Token **token) {
+	while (!at_eof(*token)) {
+		vec_push(&(nodes), funcDecl(token));
+	}
+	return nodes;
+}
+*/
 
 Vector	*parse(Token *token)
 {

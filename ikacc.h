@@ -14,6 +14,7 @@
 # define PD(d) fprintf(stderr, "%d\n", d)
 # define PLVAR(l) fprintf(stderr, "%.*s\n", l->len, l->name)
 # define PTKSTR(t) fprintf(stderr, "%.*s\n", t->len, t->str)
+# define PNDNAME(n) fprintf(stderr, "%.*s\n", n->len, n->name)
 
 typedef enum e_TokenKind
 {
@@ -112,6 +113,7 @@ bool	consume_kind(Token **this, TokenKind kind);
 void	expect(Token **this, char *op);
 bool	at_eof(Token *this);
 bool	is_same_token_kind(Token *this, TokenKind kind);
+bool	is_same_token_str(Token *this, char *s);
 int		expect_number(Token **this);
 bool	start_with(const char *s1, const char *s2);
 
