@@ -4,6 +4,7 @@
 Node	*assign(Token **token);
 Node	*expr(Token **token);
 Node	*stmt(Token **token);
+Node	*primary(Token **token);
 
 void	set_node_kind(Node *this, NodeKind kind) {
 	this->kind = kind;
@@ -13,12 +14,20 @@ void	set_node_val(Node *this, int val) {
 	this->val = val;
 }
 
-Node	*new_node(Node *lhs, Node *rhs) {
+Node	*new_node2(Node *lhs, Node *rhs) {
 	Node	*new;
 
 	new = calloc(1, sizeof(Node));
 	new->lhs = lhs;
 	new->rhs = rhs;
+	return new;
+}
+
+Node	*new_node(NodeKind kind, Node *lhs, Node *rhs) {
+	Node	*new;
+
+	new = new_node2(lhs, rhs);
+	set_node_kind(new, kind);
 	return new;
 }
 
@@ -66,8 +75,8 @@ Lvar	*find_lvar(Token *token) {
 Node	*var(Token **token) {
 	Node	*node;
 
-	node = new_node(NULL, NULL);
-	set_node_kind(node, ND_LVAR);
+	node = new_node(ND_LVAR, NULL, NULL);
+	// set_node_kind(node, ND_LVAR);
 
 	Lvar *lvar = find_lvar(*token);
 	if (lvar == NULL) {
@@ -94,8 +103,7 @@ Node	*funcCall(Token **token) {
 	tk = *token;
 	expect_kind(token, TK_IDENT);
 	expect(token, "(");
-	node = new_node(NULL, NULL);
-	set_node_kind(node, ND_FUNCCALL);
+	node = new_node(ND_FUNCCALL, NULL, NULL);
 	node->name = tk->str;
 	node->len = tk->len;
 
@@ -124,8 +132,7 @@ Node	*primary(Token **token) {
 		return node;
 	}
 	if (is_same_token_kind(*token, TK_NUM)) {
-		node = new_node(NULL, NULL);
-		set_node_kind(node, ND_NUM);
+		node = new_node(ND_NUM, NULL, NULL);
 		set_node_val(node, expect_number(token));
 		return node;
 	}
@@ -145,9 +152,13 @@ Node	*unary(Token **token) {
 	if (consume(token, "+"))
 		return primary(token);
 	if (consume(token, "-")) {
-		node = new_node(new_node_num(0), primary(token));
-		set_node_kind(node, ND_SUB);
-		return node;
+		return new_node(ND_SUB, new_node_num(0), primary(token));
+	}
+	if (consume(token, "&")) {
+		return new_node(ND_ADDR, unary(token), NULL);
+	}
+	if (consume(token, "*")) {
+		return new_node(ND_DEREF, unary(token), NULL);
 	}
 	return primary(token);
 }
@@ -159,12 +170,10 @@ Node	*mul(Token **token) {
 	node = unary(token);
 	while (true) {
 		if (consume(token, "*")) {
-			node = new_node(node, unary(token));
-			set_node_kind(node, ND_MUL);
+			node = new_node(ND_MUL, node, unary(token));
 		}
 		else if (consume(token, "/")) {
-			node = new_node(node, unary(token));
-			set_node_kind(node, ND_DIV);
+			node = new_node(ND_DIV, node, unary(token));
 		}
 		else {
 			return node;
@@ -179,12 +188,10 @@ Node	*add(Token **token) {
 	node = mul(token);
 	while (true) {
 		if (consume(token, "+")) {
-			node = new_node(node, mul(token));
-			set_node_kind(node, ND_ADD);
+			node = new_node(ND_ADD, node, mul(token));
 		}
 		else if (consume(token, "-")) {
-			node = new_node(node, mul(token));
-			set_node_kind(node, ND_SUB);
+			node = new_node(ND_SUB, node, mul(token));
 		}
 		else {
 			return node;
@@ -199,20 +206,16 @@ Node	*relational(Token **token) {
 	node = add(token);
 	while (true) {
 		if (consume(token, "<")) {
-			node = new_node(node, add(token));
-			set_node_kind(node, ND_LT);
+			node = new_node(ND_LT, node, add(token));
 		}
 		else if (consume(token, "<=")) {
-			node = new_node(node, add(token));
-			set_node_kind(node, ND_LE);
+			node = new_node(ND_LE, node, add(token));
 		}
 		else if (consume(token, ">")) {
-			node = new_node(add(token), node);
-			set_node_kind(node, ND_LT);
+			node = new_node(ND_LT, add(token), node);
 		}
 		else if (consume(token, ">=")) {
-			node = new_node(add(token), node);
-			set_node_kind(node, ND_LE);
+			node = new_node(ND_LE, add(token), node);
 		}
 		else {
 			return node;
@@ -228,12 +231,10 @@ Node	*equality(Token **token) {
 	node = relational(token);
 	while (true) {
 		if (consume(token, "==")) {
-			node = new_node(node, relational(token));
-			set_node_kind(node, ND_EQ);
+			node = new_node(ND_EQ, node, relational(token));
 		}
 		else if (consume(token, "!=")) {
-			node = new_node(node, relational(token));
-			set_node_kind(node, ND_NE);
+			node = new_node(ND_NE, node, relational(token));
 		}
 		else {
 			return node;
@@ -248,8 +249,7 @@ Node	*assign(Token **token) {
 	// DBG();
 	node = equality(token);
 	if (consume(token, "=")) {
-		node = new_node(node, assign(token));
-		set_node_kind(node, ND_ASSIGN);
+		node = new_node(ND_ASSIGN, node, assign(token));
 	}
 	return node;
 }
@@ -349,8 +349,8 @@ Node	*funcDecl(Token **token) {
 	Node	*node;
 
 	if (is_same_token_kind(*token, TK_IDENT)) {
-		node = new_node(NULL, NULL);
-		set_node_kind(node, ND_FUNCDECL);
+		node = new_node(ND_FUNCDECL, NULL, NULL);
+		// set_node_kind(node, ND_FUNCDECL);
 		node->name = (*token)->str;
 		node->len = (*token)->len;
 

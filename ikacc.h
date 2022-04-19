@@ -47,6 +47,8 @@ typedef enum {
 	ND_SUB, // -
 	ND_MUL, // *
 	ND_DIV, // /
+	ND_ADDR, // &
+	ND_DEREF, // *
 	ND_EQ, // ==
 	ND_NE, // !=
 	ND_LT, // <
@@ -135,7 +137,7 @@ Vector	*vec_new(void);
 void	vec_push(Vector **this, void *data);
 void	vec_dump(Vector *this);
 
-// others
-int	allocate_lvar_space(void);
+// // others
+// int	allocate_lvar_space(void);
 
 #endif

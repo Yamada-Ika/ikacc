@@ -1,8 +1,8 @@
 #include "ikacc.h"
 
-void	dbg_token(Token *this)
+void	dump_token(Token *this)
 {
-	fprintf(stderr, "Start dbg_token\n");
+	fprintf(stderr, "Start dump_token\n");
 
 	while (!at_eof(this))
 	{
@@ -25,78 +25,118 @@ void	dbg_token(Token *this)
 		this = this->next;
 	}
 
-	fprintf(stderr, "End dbg_token\n");
+	fprintf(stderr, "End dump_token\n");
 	// exit(1);
 }
 
-void	dbg_node(Node *this)
+// const char *kw[]={"ND_ADD", "ND_SUB", "ND_MUL", "ND_DIV", "ND_ADDR", "ND_DEREF", "ND_EQ",
+// 	"ND_NE", "ND_LT", "ND_LE", "ND_ASSIGN", "ND_FUNCDECL", "ND_FUNCCALL", "ND_LVAR", "ND_NUM",
+// 	"ND_IF", "ND_ELSE", "ND_WHILE", "ND_FOR", "ND_BLOCK", "ND_RETURN"};
+
+void	dump_node(Node *this)
 {
+	if (this == NULL)
+		return ;
+
 	switch (this->kind) {
-		case ND_NUM:
-			fprintf(stderr, "%d\n", this->val);
+		case ND_FUNCDECL: {
+			printf("ND_FUNCDECL : %.*s\n", this->len, this->name);
+			dump_node(this->body);
 			return ;
-		case ND_LVAR:
-			fprintf(stderr, "lvar\n");
+		}
+		case ND_BLOCK: {
+			printf("ND_BLOCK\n");
+			for (int i = 0; i < this->stmts->len; i++) {
+				dump_node(this->stmts->data[i]);
+			}
 			return ;
-		case ND_ASSIGN:
-			fprintf(stderr, "%s\n", "=");
+		}
+		case ND_FUNCCALL: {
+			printf("ND_BLOCK\n");
 			return ;
+		}
+		case ND_IF: {
+				printf("ND_IF\n");
+				dump_node(this->cond);
+				dump_node(this->then);
+				if (this->els != NULL)
+					dump_node(this->els);
+				return ;
+			}
+		case ND_WHILE: {
+				printf("ND_WHILE\n");
+				dump_node(this->cond);
+				dump_node(this->then);
+				return ;
+			}
+		case ND_FOR: {
+				printf("ND_FOR\n");
+				dump_node(this->init);
+				if (this->cond != NULL)
+					dump_node(this->cond);
+				dump_node(this->then);
+				dump_node(this->step);
+				return ;
+			}
+		case ND_RETURN: {
+			printf("ND_RETURN\n");
+			dump_node(this->lhs);
+			return ;
+		}
+		case ND_NUM: {
+			printf("ND_NUM\n");
+			return ;
+		}
+		case ND_ADDR: {
+			printf("ND_ADDR\n");
+			return ;
+		}
+		case ND_DEREF: {
+			printf("ND_DEREF\n");
+			return ;
+		}
+		case ND_LVAR: {
+			printf("ND_LVAR\n");
+			return ;
+		}
+		case ND_ASSIGN: {
+			printf("ND_ASSIGN\n");
+			dump_node(this->rhs);
+			return ;
+		}
 	}
 
-	dbg_node(this->lhs);
-	dbg_node(this->rhs);
+	dump_node(this->lhs);
+	dump_node(this->rhs);
 
 	switch (this->kind) {
 		case ND_ADD:
-			fprintf(stderr, "%c\n", '+');
+			printf("ND_ADD\n");
 			break ;
 		case ND_SUB:
-			fprintf(stderr, "%c\n", '-');
+			printf("ND_SUB\n");
 			break ;
 		case ND_MUL:
-			fprintf(stderr, "%c\n", '*');
+			printf("ND_MUL\n");
 			break ;
 		case ND_DIV:
-			fprintf(stderr, "%c\n", '/');
+			printf("ND_DIV\n");
 			break ;
 		case ND_LT:
-			fprintf(stderr, "%s\n", "<");
+			printf("ND_LT\n");
 			break ;
 		case ND_LE:
-			fprintf(stderr, "%s\n", "<=");
+			printf("ND_LE\n");
 			break ;
 		case ND_EQ:
-			fprintf(stderr, "%s\n", "==");
+			printf("ND_EQ\n");
 			break ;
 		case ND_NE:
-			fprintf(stderr, "%s\n", "<=");
+			printf("ND_NE\n");
 			break ;
 	}
 
 	// exit(1);
-}
-
-int	count_lvar_num(void)
-{
-	int	cnt;
-
-	cnt = 0;
-	while (locals != NULL)
-	{
-		cnt++;
-		locals = locals->next;
-	}
-	return cnt;
-}
-
-int	allocate_lvar_space(void)
-{
-	int	cnt_lvar;
-
-	cnt_lvar = count_lvar_num();
-	if (cnt_lvar == 0)
-		return 0;
-	return (cnt_lvar - 1) * 8;
 }
 
 int	main(int argc, char **argv)
@@ -109,16 +149,17 @@ int	main(int argc, char **argv)
 	locals = (Lvar *)calloc(1, sizeof(Lvar));
 
 	Token	*token = tokenize(argv[1]);
-	// dbg_token(token);
+	// dump_token(token);
 
-	Vector	*nodes = parse(token);
-	// PP(node);
-	// fprintf(stderr, "Start dbg_node\n");
-	// for (int i = 0; code[i] != NULL; i++)
+	Vector	*node = parse(token);
+	// PP(this);
+	// fprintf(stderr, "Start dump_node\n");
+	// for (int i = 0; i < node->len; i++)
 	// {
-	// 	dbg_node(code[i]);
+	// 	dump_node(nodes->data[i]);
 	// }
-	// fprintf(stderr, "End dbg_node\n");
+	// fprintf(stderr, "End dump_node\n");
+	// exit(1);
 
 	printf(".intel_syntax noprefix\n");
 	printf(".globl main\n");

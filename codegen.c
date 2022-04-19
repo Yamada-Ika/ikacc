@@ -2,7 +2,51 @@
 
 int	label;
 
-void	gen_lvar(Node *node)
+static int	count_lvar_num(void)
+{
+	int	cnt;
+	Lvar	*head;
+
+	head = locals;
+	cnt = 0;
+	while (locals != NULL)
+	{
+		cnt++;
+		locals = locals->next;
+	}
+	locals = head;
+	return cnt;
+}
+
+static int	allocate_lvar_space(void)
+{
+	int	cnt_lvar;
+
+	cnt_lvar = count_lvar_num();
+	if (cnt_lvar == 0)
+		return 0;
+	return (cnt_lvar - 1) * 8;
+}
+
+static void	align_stack(Node *node) {
+	int align_label = label;
+	label++;
+	printf("\tmov rax, rsp\n");
+	printf("\tand rax, 15 # equivalent to rax %% 16\n");
+	printf("\tjnz .L.call.with.align.%d\n", align_label);
+
+	printf("\tcall %.*s\n", node->len, node->name);
+	printf("\tjmp .L.end.%d\n", align_label);
+
+	printf(".L.call.with.align.%d:\n", align_label);
+	printf("\tsub rsp, 8\n");
+	printf("\tcall %.*s\n", node->len, node->name);
+	printf("\tadd rsp, 8\n");
+	printf(".L.end.%d:\n", align_label);
+	printf("\tpush rax\n");
+}
+
+static void	gen_lvar(Node *node)
 {
 	if (node->kind != ND_LVAR)
 		error("error: Invalid assign");
@@ -21,36 +65,27 @@ void	gen(Node *node)
 
 	switch (node->kind) {
 		case ND_FUNCDECL: {
-			printf("%.*s:\n", node->len, node->name);
+			printf("\n%.*s:\n", node->len, node->name);
 			printf("\tpush rbp\n");
 			printf("\tmov rbp, rsp\n");
 			printf("\tsub rsp, %d\n", allocate_lvar_space());
 			for (int i = 0; i < node->args->len; i++) {
 				gen_lvar(node->args->data[i]); // varのアドレスがスタックトップに置かれる
 				printf("\tpop rax  # %d\n", __LINE__);
-				switch (i) {
-				case 0:
+				if (i == 0)
 					printf("\tmov [rax], rdi\n");
-					break ;
-				case 1:
+				else if (i == 1)
 					printf("\tmov [rax], rsi\n");
-					break;
-				case 2:
+				else if (i == 2)
 					printf("\tmov [rax], rdx\n");
-					break;
-				case 3:
+				else if (i == 3)
 					printf("\tmov [rax], rcx\n");
-					break;
-				case 4:
+				else if (i == 4)
 					printf("\tmov [rax], r8\n");
-					break;
-				case 5:
+				else if (i == 5)
 					printf("\tmov [rax], r9\n");
-					break;
-				}
 			}
 			gen(node->body);
-			// printf("\tpop rax  # %d\n", __LINE__);
 			printf("\tmov rsp, rbp\n");
 			printf("\tpop rbp\n");
 			printf("\tret\n");
@@ -59,41 +94,32 @@ void	gen(Node *node)
 		case ND_BLOCK: {
 			for (int i = 0; i < node->stmts->len; i++) {
 				gen(node->stmts->data[i]);
-				printf("\tpop rax  # %d\n", __LINE__); // return がないとどんどんスタックに値が積まれるのでpopしておく
+				// printf("\tpop rax  # %d\n", __LINE__); // return がないとどんどんスタックに値が積まれるのでpopしておく
 			}
 			return ;
 		}
 		case ND_FUNCCALL: {
 			for (int i = 0; i < node->args->len; i++) {
-				switch (i) {
-				case 0:
-					gen(node->args->data[0]);
+				gen(node->args->data[i]);
+				if (i == 0)
 					printf("\tpop rdi\n");
-					break;
-				case 1:
-					gen(node->args->data[1]);
+				else if (i == 1)
 					printf("\tpop rsi\n");
-					break;
-				case 2:
-					gen(node->args->data[2]);
+				else if (i == 2)
 					printf("\tpop rdx\n");
-					break;
-				case 3:
-					gen(node->args->data[3]);
+				else if (i == 3)
 					printf("\tpop rcx\n");
-					break;
-				case 4:
-					gen(node->args->data[4]);
+				else if (i == 4)
 					printf("\tpop r8\n");
-					break;
-				case 5:
-					gen(node->args->data[5]);
+				else if (i == 5)
 					printf("\tpop r9\n");
-					break;
-				}
 			}
+
+			// align_stack(node);
+
 			printf("\tcall %.*s\n", node->len, node->name);
 			printf("\tpush rax\n");
+
 			return ;
 		}
 		case ND_IF: {
@@ -154,9 +180,21 @@ void	gen(Node *node)
 			printf("\tpush %d\n", node->val);
 			return ;
 		}
+		case ND_ADDR: {
+			gen_lvar(node->lhs);
+			return ;
+		}
+		case ND_DEREF: {
+			gen_lvar(node->lhs);
+			printf("\tpop rax  # ND_DEREF\n");
+			printf("\tmov rax, [rax]\n");
+			printf("\tmov rax, [rax]\n");
+			printf("\tpush rax\n");
+			return ;
+		}
 		case ND_LVAR: {
 			gen_lvar(node);
-			printf("\tpop rax  # %d\n", __LINE__);
+			printf("\tpop rax  # ND_LVAR\n");
 			printf("\tmov rax, [rax]\n");
 			printf("\tpush rax\n");
 			return ;

@@ -158,7 +158,7 @@ Token	*tokenize(char *code)
 			cur = new_token(cur, TK_RESERVED, &code, 2);
 			continue ;
 		}
-		if (strchr("+-*/()<>;=,", *code) != NULL)
+		if (strchr("+-*/()<>;=,&", *code) != NULL)
 		{
 			cur = new_token(cur, TK_RESERVED, &code, 1);
 			continue ;
