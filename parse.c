@@ -55,13 +55,11 @@ Lvar	*find_lvar(Token *token) {
 	Lvar	*at;
 
 	head = locals;
-	while (locals->next != NULL)
-	{
+	while (locals->next != NULL) {
 		if (
 			locals->len == token->len
 			&& strncmp(locals->name, token->str, locals->len) == 0
-		)
-		{
+		) {
 			at = locals;
 			locals = head;
 			return at;
@@ -107,8 +105,6 @@ Node	*funcCall(Token **token) {
 	node->name = tk->str;
 	node->len = tk->len;
 
-	// PNDNAME(node);
-
 	node->args = vec_new();
 	for (int cnt = 0; !consume(token, ")"); cnt++) {
 		if (cnt >= 1)
@@ -118,7 +114,6 @@ Node	*funcCall(Token **token) {
 		vec_push(&node->args, assign(token));
 	}
 	// vec_dump(node->args);
-	// expect(token, ")");
 	return node;
 }
 
@@ -328,19 +323,6 @@ Node	*stmt(Token **token) {
 	return node;
 }
 
-// Vector	*program(Token **token) {
-// 	size_t	i;
-
-// 	// DBG();
-// 	i = 0;
-// 	while (!at_eof(*token)) {
-// 		vec_push(&(nodes), stmt(token));
-// 		i++;
-// 	}
-// 	// DBG();
-// 	return nodes;
-// }
-
 Node	*funcBody(Token **token) {
 	return blockBody(token);
 }
@@ -350,7 +332,6 @@ Node	*funcDecl(Token **token) {
 
 	if (is_same_token_kind(*token, TK_IDENT)) {
 		node = new_node(ND_FUNCDECL, NULL, NULL);
-		// set_node_kind(node, ND_FUNCDECL);
 		node->name = (*token)->str;
 		node->len = (*token)->len;
 

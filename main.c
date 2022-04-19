@@ -29,10 +29,6 @@ void	dump_token(Token *this)
 	// exit(1);
 }
 
-// const char *kw[]={"ND_ADD", "ND_SUB", "ND_MUL", "ND_DIV", "ND_ADDR", "ND_DEREF", "ND_EQ",
-// 	"ND_NE", "ND_LT", "ND_LE", "ND_ASSIGN", "ND_FUNCDECL", "ND_FUNCCALL", "ND_LVAR", "ND_NUM",
-// 	"ND_IF", "ND_ELSE", "ND_WHILE", "ND_FOR", "ND_BLOCK", "ND_RETURN"};
-
 void	dump_node(Node *this)
 {
 	if (this == NULL)
@@ -163,23 +159,10 @@ int	main(int argc, char **argv)
 
 	printf(".intel_syntax noprefix\n");
 	printf(".globl main\n");
-	// printf("main:\n");
 
-	// // Prologue
-	// printf("\tpush rbp\n");
-	// printf("\tmov rbp, rsp\n");
-	// printf("\tsub rsp, %d\n", allocate_lvar_space()); // Allocate space 26 (variables) * 8 (bit)
-
-	for (int i = 0; i < nodes->len; i++)
-	{
+	for (int i = 0; i < nodes->len; i++) {
 		gen(nodes->data[i]);
-		// printf("\tpop rax\n");
 	}
 
-	// Epilogue
-	// printf("\tmov rsp, rbp\n");
-	// printf("\tpop rbp\n");
-	
-	// printf("\tret\n");
 	return (0);
 }

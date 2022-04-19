@@ -2,8 +2,7 @@
 
 int	label;
 
-static int	count_lvar_num(void)
-{
+static int	count_lvar_num(void) {
 	int	cnt;
 	Lvar	*head;
 
@@ -18,8 +17,7 @@ static int	count_lvar_num(void)
 	return cnt;
 }
 
-static int	allocate_lvar_space(void)
-{
+static int	allocate_lvar_space(void) {
 	int	cnt_lvar;
 
 	cnt_lvar = count_lvar_num();
@@ -46,8 +44,7 @@ static void	align_stack(Node *node) {
 	printf("\tpush rax\n");
 }
 
-static void	gen_lvar(Node *node)
-{
+static void	gen_lvar(Node *node) {
 	if (node->kind != ND_LVAR)
 		error("error: Invalid assign");
 	
@@ -56,8 +53,7 @@ static void	gen_lvar(Node *node)
 	printf("\tpush rax\n");
 }
 
-void	gen(Node *node)
-{
+void	gen(Node *node) {
 	// fprintf(stderr, "Start gen\n");
 
 	if (node == NULL)
@@ -123,51 +119,51 @@ void	gen(Node *node)
 			return ;
 		}
 		case ND_IF: {
-				int if_label = label;
-				label++;
-				gen(node->cond);
-				printf("\tpop rax  # %d\n", __LINE__);
-				printf("\tcmp rax, 0\n");
-				printf("\tje .Lelse%d\n", if_label);
-				gen(node->then);
-				printf("\tjmp .Lend%d\n", if_label);
-				printf(".Lelse%d:\n", if_label);
-				if (node->els != NULL)
-					gen(node->els);
-				printf(".Lend%d:\n", if_label);
-				return ;
-			}
+			int if_label = label;
+			label++;
+			gen(node->cond);
+			printf("\tpop rax  # %d\n", __LINE__);
+			printf("\tcmp rax, 0\n");
+			printf("\tje .Lelse%d\n", if_label);
+			gen(node->then);
+			printf("\tjmp .Lend%d\n", if_label);
+			printf(".Lelse%d:\n", if_label);
+			if (node->els != NULL)
+				gen(node->els);
+			printf(".Lend%d:\n", if_label);
+			return ;
+		}
 		case ND_WHILE: {
-				int while_label = label;
-				label++;
-				printf(".Lbegin%d:\n", while_label);
-				gen(node->cond);
-				printf("\tpop rax  # %d\n", __LINE__);
-				printf("\tcmp rax, 0\n");
-				printf("\tje .Lend%d\n", while_label);
-				gen(node->then);
-				printf("\tjmp .Lbegin%d\n", while_label);
-				printf(".Lend%d:\n", while_label);
-				return ;
-			}
+			int while_label = label;
+			label++;
+			printf(".Lbegin%d:\n", while_label);
+			gen(node->cond);
+			printf("\tpop rax  # %d\n", __LINE__);
+			printf("\tcmp rax, 0\n");
+			printf("\tje .Lend%d\n", while_label);
+			gen(node->then);
+			printf("\tjmp .Lbegin%d\n", while_label);
+			printf(".Lend%d:\n", while_label);
+			return ;
+		}
 		case ND_FOR: {
-				int for_label = label;
-				label++;
-				gen(node->init);
-				printf(".Lbegin%d:\n", for_label);
-				if (node->cond != NULL)
-					gen(node->cond);
-				else
-					printf("\tpush 1\n");
-				printf("\tpop rax  # %d\n", __LINE__);
-				printf("\tcmp rax, 0\n");
-				printf("\tje .Lend%d\n", for_label);
-				gen(node->then);
-				gen(node->step);
-				printf("\tjmp .Lbegin%d\n", for_label);
-				printf(".Lend%d:\n", for_label);
-				return ;
-			}
+			int for_label = label;
+			label++;
+			gen(node->init);
+			printf(".Lbegin%d:\n", for_label);
+			if (node->cond != NULL)
+				gen(node->cond);
+			else
+				printf("\tpush 1\n");
+			printf("\tpop rax  # %d\n", __LINE__);
+			printf("\tcmp rax, 0\n");
+			printf("\tje .Lend%d\n", for_label);
+			gen(node->then);
+			gen(node->step);
+			printf("\tjmp .Lbegin%d\n", for_label);
+			printf(".Lend%d:\n", for_label);
+			return ;
+		}
 		case ND_RETURN: {
 			gen(node->lhs);
 			printf("\tpop rax  # %d\n", __LINE__);

@@ -98,54 +98,44 @@ Token	*tokenize(char *code)
 	Token	*cur;
 
 	cur = &head;
-	while (*code != '\0')
-	{
+	while (*code != '\0') {
 		while (*code == ' ')
 			code++;
 		if (*code == '\0')
 			break ;
-		if (*code == '\n')
-		{
+		if (*code == '\n') {
 			code++;
 			continue ;
 		}
-		if (*code == '{' || *code == '}')
-		{
+		if (*code == '{' || *code == '}') {
 			cur = new_token(cur, TK_BLOCK, &code, 1);
 			continue ;
 		}
-		if (is_keyword(code, "if"))
-		{
+		if (is_keyword(code, "if")) {
 			cur = new_token(cur, TK_IF, &code, 2);
 			continue ;
 		}
-		if (is_keyword(code, "else"))
-		{
+		if (is_keyword(code, "else")) {
 			cur = new_token(cur, TK_ELSE, &code, 4);
 			continue ;
 		}
-		if (is_keyword(code, "while"))
-		{
+		if (is_keyword(code, "while")) {
 			cur = new_token(cur, TK_WHILE, &code, 5);
 			continue ;
 		}
-		if (is_keyword(code, "for"))
-		{
+		if (is_keyword(code, "for")) {
 			cur = new_token(cur, TK_FOR, &code, 3);
 			continue ;
 		}
-		if (is_keyword(code, "return"))
-		{
+		if (is_keyword(code, "return")) {
 			cur = new_token(cur, TK_RETURN, &code, 6);
 			continue ;
 		}
-		if (is_ident_char(*code))
-		{
+		if (is_ident_char(*code)) {
 			cur = new_token(cur, TK_IDENT, &code, calc_ident_len(code));
 			continue ;
 		}
-		if (isdigit(*code))
-		{
+		if (isdigit(*code)) {
 			cur = new_token_num(cur, &code);
 			continue ;
 		}
@@ -153,13 +143,11 @@ Token	*tokenize(char *code)
 			|| start_with(code, "!=")
 			|| start_with(code, "<=")
 			|| start_with(code, ">=")
-		)
-		{
+		) {
 			cur = new_token(cur, TK_RESERVED, &code, 2);
 			continue ;
 		}
-		if (strchr("+-*/()<>;=,&", *code) != NULL)
-		{
+		if (strchr("+-*/()<>;=,&", *code) != NULL) {
 			cur = new_token(cur, TK_RESERVED, &code, 1);
 			continue ;
 		}
@@ -170,56 +158,47 @@ Token	*tokenize(char *code)
 	return (head.next);
 }
 
-bool	is_same_token_kind(Token *this, TokenKind kind)
-{
+bool	is_same_token_kind(Token *this, TokenKind kind) {
 	return (this->kind == kind);
 }
 
-bool	at_eof(Token *this)
-{
+bool	at_eof(Token *this) {
 	return (is_same_token_kind(this, TK_EOF));
 }
 
-bool	is_same_len(char *s, int len)
-{
+bool	is_same_len(char *s, int len) {
 	return (strlen(s) == len);
 }
 
-bool	is_same_token_str(Token *this, char *s)
-{
+bool	is_same_token_str(Token *this, char *s) {
 	return (strncmp(this->str, s, this->len) == 0
 		&& is_same_len(s, this->len));
 }
 
-bool	consume_kind(Token **this, TokenKind kind)
-{
+bool	consume_kind(Token **this, TokenKind kind) {
 	if (!is_same_token_kind(*this, kind))
 		return (false);
 	*this = (*this)->next;
 	return (true);
 }
 
-bool	consume(Token **this, char *op)
-{
+bool	consume(Token **this, char *op) {
 	if (!is_same_token_str(*this, op))
 		return (false);
 	*this = (*this)->next;
 	return (true);
 }
 
-void	expect(Token **this, char *op)
-{
+void	expect(Token **this, char *op) {
 	if (!is_same_token_str(*this, op))
 		error_at((*this)->str, "expect %s, but got %c\n", op, (*this)->str[0]);
 	*this = (*this)->next;
 }
 
-int	expect_number(Token **this)
-{
+int	expect_number(Token **this) {
 	int	n;
 
-	if (!is_same_token_kind(*this, TK_NUM))
-	{
+	if (!is_same_token_kind(*this, TK_NUM)) {
 		error_at((*this)->str, "should be numeric");
 	}
 	n = get_val(*this);
@@ -227,8 +206,7 @@ int	expect_number(Token **this)
 	return (n);
 }
 
-bool	consume_next(Token **this, char *op)
-{
+bool	consume_next(Token **this, char *op) {
 	if (!is_same_token_str((*this)->next, op))
 		return (false);
 	*this = (*this)->next->next;
