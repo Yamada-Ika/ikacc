@@ -22,11 +22,13 @@ void	dump_token(Token *this)
 			fprintf(stderr, "TK_RETURN   : return\n");
 		else if (is_same_token_kind(this, TK_BLOCK))
 			fprintf(stderr, "TK_BLOCK    : %.*s\n", this->len, this->str);
+		else if (is_same_token_kind(this, TK_TYPE))
+			fprintf(stderr, "TK_TYPE     : %.*s\n", this->len, this->str);
 		this = this->next;
 	}
 
 	fprintf(stderr, "End dump_token\n");
-	// exit(1);
+	exit(1);
 }
 
 void	dump_node(Node *this)

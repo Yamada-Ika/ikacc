@@ -135,9 +135,15 @@ Node	*primary(Token **token) {
 		if (is_same_token_str((*token)->next, "(")) {
 			return funcCall(token);
 		}
+
+		Lvar *lvar = find_lvar(*token);
+		if (lvar == NULL) {
+			error_at((*token)->str, "error: Variable does not decralation");
+		}
+
 		return var(token);
 	}
-	error("error: Failed to parse");
+	error_at((*token)->str, "error: Failed to parse");
 }
 
 Node	*unary(Token **token) {
@@ -251,7 +257,19 @@ Node	*assign(Token **token) {
 
 Node	*expr(Token **token) {
 	// DBG();
-	return assign(token);
+	Node	*node;
+
+	if (consume(token, "int")) {
+		node = var(token);
+		if (consume(token, "=")) {
+			node = new_node(ND_ASSIGN, node, assign(token));
+		}
+		// expect(token, ";");
+	}
+	else {
+		node = assign(token);
+	}
+	return node;
 }
 
 Node	*blockBody(Token **token) {
@@ -271,6 +289,11 @@ Node	*stmt(Token **token) {
 	Node	*node;
 
 	// DBG();
+
+	// if (consume(token, "int")) {
+	// 	node = var(token);
+	// 	expect(token, ";");
+	// }
 	if (consume(token, "{")) {
 		return blockBody(token);
 	}
@@ -330,6 +353,7 @@ Node	*funcBody(Token **token) {
 Node	*funcDecl(Token **token) {
 	Node	*node;
 
+	expect(token, "int");
 	if (is_same_token_kind(*token, TK_IDENT)) {
 		node = new_node(ND_FUNCDECL, NULL, NULL);
 		node->name = (*token)->str;
@@ -343,6 +367,7 @@ Node	*funcDecl(Token **token) {
 				expect(token, ",");
 			if (cnt > 5)
 				error_at((*token)->str, "error: Too many arguments");
+			expect(token, "int");
 			vec_push(&node->args, var(token));
 		}
 		// vec_dump(node->args);

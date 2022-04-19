@@ -99,12 +99,12 @@ Token	*tokenize(char *code)
 
 	cur = &head;
 	while (*code != '\0') {
-		while (*code == ' ')
+		if (*code == ' ' || *code == '\n') {
 			code++;
-		if (*code == '\0')
-			break ;
-		if (*code == '\n') {
-			code++;
+			continue ;
+		}
+		if (start_with(code, "int") && code[3] == ' ') {
+			cur = new_token(cur, TK_TYPE, &code, 3);
 			continue ;
 		}
 		if (*code == '{' || *code == '}') {
