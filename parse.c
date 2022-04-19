@@ -46,7 +46,7 @@ int	get_node_num(Node *node) {
 
 void	expect_kind(Token **this, TokenKind kind) {
 	if (!is_same_token_kind(*this, kind))
-		error_at((*this)->str, "should be numeric");
+		error_at((*this)->str, "error: expect token kind %d, but got %d", kind, (*this)->kind);
 	*this = (*this)->next;
 }
 
@@ -90,6 +90,7 @@ Node	*var(Token **token) {
 		node->offset = lvar->offset;
 	}
 
+
 	expect_kind(token, TK_IDENT);
 	return node;
 }
@@ -99,6 +100,7 @@ Node	*funcCall(Token **token) {
 	Token	*tk;
 
 	tk = *token;
+
 	expect_kind(token, TK_IDENT);
 	expect(token, "(");
 	node = new_node(ND_FUNCCALL, NULL, NULL);
@@ -120,7 +122,7 @@ Node	*funcCall(Token **token) {
 Node	*primary(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	if (consume(token, "(")) {
 		node = expr(token);
 		expect(token, ")");
@@ -149,7 +151,7 @@ Node	*primary(Token **token) {
 Node	*unary(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	if (consume(token, "+"))
 		return primary(token);
 	if (consume(token, "-")) {
@@ -167,7 +169,7 @@ Node	*unary(Token **token) {
 Node	*mul(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	node = unary(token);
 	while (true) {
 		if (consume(token, "*")) {
@@ -185,7 +187,7 @@ Node	*mul(Token **token) {
 Node	*add(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	node = mul(token);
 	while (true) {
 		if (consume(token, "+")) {
@@ -203,7 +205,7 @@ Node	*add(Token **token) {
 Node	*relational(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	node = add(token);
 	while (true) {
 		if (consume(token, "<")) {
@@ -228,7 +230,7 @@ Node	*relational(Token **token) {
 Node	*equality(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	node = relational(token);
 	while (true) {
 		if (consume(token, "==")) {
@@ -247,7 +249,7 @@ Node	*equality(Token **token) {
 Node	*assign(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	node = equality(token);
 	if (consume(token, "=")) {
 		node = new_node(ND_ASSIGN, node, assign(token));
@@ -255,16 +257,34 @@ Node	*assign(Token **token) {
 	return node;
 }
 
+Type	*new_type(typeKind ty) {
+	Type	*new;
+
+	new = calloc(1, sizeof(Type));
+	new->ty = ty;
+	return new;
+}
+
 Node	*expr(Token **token) {
-	// DBG();
+	//
 	Node	*node;
 
-	if (consume(token, "int")) {
+	if (is_same_token_str(*token, "int")) {
+
+		expect_kind(token, TK_TYPE);
+		Type *type = new_type(INT);
+		while (consume(token, "*")) {
+			Type *next = new_type(PTR);
+			next->ptr_to = type;
+			type = next;
+		}
+
 		node = var(token);
+		node->type = type;
+
 		if (consume(token, "=")) {
 			node = new_node(ND_ASSIGN, node, assign(token));
 		}
-		// expect(token, ";");
 	}
 	else {
 		node = assign(token);
@@ -275,20 +295,20 @@ Node	*expr(Token **token) {
 Node	*blockBody(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 	node = calloc(1, sizeof(Node));
 	set_node_kind(node, ND_BLOCK);
 	while (!consume(token, "}")) {
 		vec_push(&node->stmts, stmt(token));
 	}
-	// DBG();
+	//
 	return node;
 }
 
 Node	*stmt(Token **token) {
 	Node	*node;
 
-	// DBG();
+	//
 
 	// if (consume(token, "int")) {
 	// 	node = var(token);
@@ -359,6 +379,7 @@ Node	*funcDecl(Token **token) {
 		node->name = (*token)->str;
 		node->len = (*token)->len;
 
+	
 		expect_kind(token, TK_IDENT);
 		expect(token, "(");
 		node->args = vec_new();
@@ -389,6 +410,6 @@ Vector	*program(Token **token) {
 }
 
 Vector	*parse(Token *token) {
-	// DBG();
+	//
 	return (program(&token));
 }

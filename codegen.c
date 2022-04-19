@@ -45,12 +45,18 @@ static void	align_stack(Node *node) {
 }
 
 static void	gen_lvar(Node *node) {
-	if (node->kind != ND_LVAR)
-		error("error: Invalid assign");
-	
-	printf("\tmov rax, rbp\n");
-	printf("\tsub rax, %d\n", node->offset);
-	printf("\tpush rax\n");
+	if (node->kind == ND_LVAR) {
+		printf("\tmov rax, rbp\n");
+		printf("\tsub rax, %d\n", node->offset);
+		printf("\tpush rax\n");
+		return ;
+	}
+	if (node->kind == ND_DEREF) {
+		gen(node->lhs);
+		return ;
+	}
+	PD(node->kind);
+	error("error: Invalid assign");
 }
 
 void	gen(Node *node) {
@@ -198,7 +204,7 @@ void	gen(Node *node) {
 			gen_lvar(node->lhs);
 			gen(node->rhs);
 			printf("\tpop rdi\n");
-			printf("\tpop rax  # %d\n", __LINE__);
+			printf("\tpop rax  # ND_ASSIGN\n");
 			printf("\tmov [rax], rdi\n");
 			printf("\tpush rdi\n");
 			return ;

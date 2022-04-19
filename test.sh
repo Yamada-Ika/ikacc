@@ -17,6 +17,16 @@ assert() {
   fi
 }
 
+assert 3 "
+int main() {
+    int x;
+    int *y;
+    y = &x;
+    print_int(y);
+    *y = 3;
+    return x;
+}
+"
 assert 0 'int main() {int a; int b; return 0; }'
 assert 0 'int main() { return 0; }'
 assert 42 "int main() { return 42; }"

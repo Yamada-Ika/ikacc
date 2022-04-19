@@ -73,6 +73,17 @@ typedef struct Vector {
 	int		len;
 }	Vector;
 
+typedef enum typeKind {
+	INT,
+	PTR,
+} typeKind;
+
+typedef struct Type Type;
+struct Type {
+	typeKind ty;
+	Type *ptr_to;
+};
+
 typedef struct Node Node;
 // 抽象構文木のノードの型
 struct Node {
@@ -85,6 +96,7 @@ struct Node {
 	Node *then;     // then
 	Node *els;     // else
 	Node *body;     // for function body
+	Type *type;
 	Vector *stmts; // for compound statements
 	Vector *args;  // function arguments
 	int val;       // kindがND_NUMの場合のみ使う
@@ -100,6 +112,7 @@ typedef struct Lvar Lvar;
  */
 struct Lvar {
 	Lvar *next;
+	Type *type;
 	char *name;
 	int len;
 	int offset;

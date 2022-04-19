@@ -146,10 +146,14 @@ int	main(int argc, char **argv)
 	g_code = argv[1];
 	locals = (Lvar *)calloc(1, sizeof(Lvar));
 
+	fprintf(stderr, "Start tokenize ...\n");
 	Token	*token = tokenize(argv[1]);
+	fprintf(stderr, "Finish tokenize ...\n");
 	// dump_token(token);
 
+	fprintf(stderr, "Start parse ...\n");
 	Vector	*node = parse(token);
+	fprintf(stderr, "Finish parse ...\n");
 	// PP(this);
 	// fprintf(stderr, "Start dump_node\n");
 	// for (int i = 0; i < node->len; i++)
