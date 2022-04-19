@@ -182,9 +182,7 @@ void	gen(Node *node) {
 		}
 		case ND_DEREF: {
 			gen(node->lhs);
-			// gen_lvar(node->lhs);
 			printf("\tpop rax  # ND_DEREF\n");
-			// printf("\tmov rax, [rax]\n");
 			printf("\tmov rax, [rax]\n");
 			printf("\tpush rax\n");
 			return ;
