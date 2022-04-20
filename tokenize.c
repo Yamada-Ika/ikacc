@@ -111,6 +111,10 @@ Token	*tokenize(char *code)
 			cur = new_token(cur, TK_BLOCK, &code, 1);
 			continue ;
 		}
+		if (is_keyword(code, "sizeof")) {
+			cur = new_token(cur, TK_SIZEOF, &code, 6);
+			continue ;
+		}
 		if (is_keyword(code, "if")) {
 			cur = new_token(cur, TK_IF, &code, 2);
 			continue ;

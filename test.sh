@@ -17,6 +17,44 @@ assert() {
   fi
 }
 
+assert 4 "
+int main() {
+    int x;
+    return sizeof(x);
+}"
+assert 4 "
+int main() {
+    int x;
+    return sizeof x;
+}"
+assert 8 "
+int main() {
+    int *x;
+    return sizeof(x);
+}"
+# assert 4 "
+# int main() {
+#     int x;
+#     return sizeof(x + 3);
+# }"
+# assert 8 "
+# int main() {
+#     int *x;
+#     return sizeof(x + 3);
+# }"
+assert 4 "
+int main() {
+    int *x;
+    return sizeof(*x);
+}"
+assert 4 "
+int main() {
+    return sizeof(1);
+}"
+assert 4 "
+int main() {
+    return sizeof(sizeof(1));
+}"
 assert 0 'int main() {int a; int b; return 0; }'
 assert 0 'int main() { return 0; }'
 assert 42 "int main() { return 42; }"
@@ -154,17 +192,6 @@ int main() {
     y = &x;
     return *y;
 }"
-assert 3 "
-int main() {
-    int x;
-    int y;
-    int z;
-    x = 3;
-    y = 5;
-    z = &y + 8;
-    return *z;
-}
-"
 assert 3 "
 int main() {
     int x;

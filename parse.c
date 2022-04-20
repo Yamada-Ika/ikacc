@@ -162,10 +162,24 @@ Node	*unary(Token **token) {
 		return new_node(ND_SUB, new_node_num(0), primary(token));
 	}
 	if (consume(token, "&")) {
-		return new_node(ND_ADDR, unary(token), NULL);
+		Node *node = new_node(ND_ADDR, unary(token), NULL);
+		Type *type = calloc(1, sizeof(Type));
+		type->ty = PTR;
+		type->ptr_to = node->lhs->type;
+		node->type = type;
+		return node;
 	}
 	if (consume(token, "*")) {
-		return new_node(ND_DEREF, unary(token), NULL);
+		node = new_node(ND_DEREF, unary(token), NULL);
+		node->type = node->lhs->type->ptr_to;
+		return node;
+	}
+	if (consume_kind(token, TK_SIZEOF)) {
+		consume(token, "(");
+		node = unary(token);
+		node = new_node_num(size_of(node->type));
+		consume(token, ")");
+		return node;
 	}
 	return primary(token);
 }

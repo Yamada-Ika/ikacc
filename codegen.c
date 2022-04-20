@@ -59,7 +59,7 @@ static void	gen_lvar(Node *node) {
 	error("error: Invalid assign");
 }
 
-static int	size_of(Type *type) {
+int	size_of(Type *type) {
 	if (type->ty == PTR)
 		return 8;
 	if (type->ty == INT)

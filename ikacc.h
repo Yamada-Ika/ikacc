@@ -27,6 +27,7 @@ typedef enum e_TokenKind
 	TK_BLOCK,		// {,}
 	TK_IDENT,		// identifer
 	TK_NUM,			// 整数トークン
+	TK_SIZEOF,		// sizeof
 	TK_TYPE,		// int
 	TK_EOF,			// 入力の終わりを表すトークン
 }	TokenKind;
@@ -153,5 +154,6 @@ void	vec_dump(Vector *this);
 
 // // others
 // int	allocate_lvar_space(void);
+int	size_of(Type *type);
 
 #endif
