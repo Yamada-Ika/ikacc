@@ -5,6 +5,7 @@ Node	*assign(Token **token);
 Node	*expr(Token **token);
 Node	*stmt(Token **token);
 Node	*primary(Token **token);
+Type	*new_type(typeKind ty);
 
 void	set_node_kind(Node *this, NodeKind kind) {
 	this->kind = kind;
@@ -37,6 +38,7 @@ Node	*new_node_num(int val) {
 	new = calloc(1, sizeof(Node));
 	set_node_kind(new, ND_NUM);
 	set_node_val(new, val);
+	new->type = new_type(INT);
 	return new;
 }
 
@@ -88,8 +90,8 @@ Node	*var(Token **token) {
 	}
 	else {
 		node->offset = lvar->offset;
+		node->type = lvar->type;
 	}
-
 
 	expect_kind(token, TK_IDENT);
 	return node;
@@ -129,9 +131,11 @@ Node	*primary(Token **token) {
 		return node;
 	}
 	if (is_same_token_kind(*token, TK_NUM)) {
-		node = new_node(ND_NUM, NULL, NULL);
-		set_node_val(node, expect_number(token));
-		return node;
+		// node = new_node(ND_NUM, NULL, NULL);
+		// set_node_val(node, expect_number(token));
+		// node->type = new_type(INT);
+		// return node;
+		return new_node_num(expect_number(token));
 	}
 	if (is_same_token_kind(*token, TK_IDENT)) {
 		if (is_same_token_str((*token)->next, "(")) {
@@ -279,8 +283,11 @@ Node	*expr(Token **token) {
 			type = next;
 		}
 
+		Token *tok = *token;
 		node = var(token);
 		node->type = type;
+		Lvar *var = find_lvar(tok);
+		var->type = type;
 
 		if (consume(token, "=")) {
 			node = new_node(ND_ASSIGN, node, assign(token));
@@ -379,7 +386,6 @@ Node	*funcDecl(Token **token) {
 		node->name = (*token)->str;
 		node->len = (*token)->len;
 
-	
 		expect_kind(token, TK_IDENT);
 		expect(token, "(");
 		node->args = vec_new();

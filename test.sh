@@ -17,16 +17,6 @@ assert() {
   fi
 }
 
-assert 3 "
-int main() {
-    int x;
-    int *y;
-    y = &x;
-    print_int(y);
-    *y = 3;
-    return x;
-}
-"
 assert 0 'int main() {int a; int b; return 0; }'
 assert 0 'int main() { return 0; }'
 assert 42 "int main() { return 42; }"
@@ -173,6 +163,27 @@ int main() {
     y = 5;
     z = &y + 8;
     return *z;
+}
+"
+assert 3 "
+int main() {
+    int x;
+    int *y;
+    y = &x;
+    print_int(y);
+    *y = 3;
+    return x;
+}
+"
+assert 8 "
+int main() {
+    int *p;
+    alloc4(&p, 1, 2, 4, 8);
+    int *q;
+    q = p + 2;
+    *q;
+    q = p + 3;
+    return *q;
 }
 "
 

@@ -59,6 +59,14 @@ static void	gen_lvar(Node *node) {
 	error("error: Invalid assign");
 }
 
+static int	size_of(Type *type) {
+	if (type->ty == PTR)
+		return 8;
+	if (type->ty == INT)
+		return 4;
+	error("error: type did not find");
+}
+
 void	gen(Node *node) {
 	// fprintf(stderr, "Start gen\n");
 
@@ -218,9 +226,25 @@ void	gen(Node *node) {
 	printf("\tpop rax  # %d\n", __LINE__);
 	switch (node->kind) {
 		case ND_ADD:
+			if (node->lhs != NULL
+				&& node->lhs->type != NULL
+				&& node->lhs->type->ty == PTR) {
+				printf("\tpush rax\n");
+				printf("\tmov rax, %d\n", size_of(node->lhs->type->ptr_to));
+				printf("\timul rdi, rax\n");
+				printf("\tpop rax\n");
+			}
 			printf("\tadd rax, rdi\n");
 			break ;
 		case ND_SUB:
+			if (node->lhs != NULL
+				&& node->lhs->type != NULL
+				&& node->lhs->type->ty == PTR) {
+				printf("\tpush rax\n");
+				printf("\tmov rax, %d\n", size_of(node->lhs->type->ptr_to));
+				printf("\timul rdi, rax\n");
+				printf("\tpop rax\n");
+			}
 			printf("\tsub rax, rdi\n");
 			break ;
 		case ND_MUL:

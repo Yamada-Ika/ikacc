@@ -72,7 +72,7 @@ int	calc_ident_len(const char *code)
 	int	len;
 
 	len = 0;
-	while (is_ident_char(*code))
+	while (is_ident_char(*code) || (len > 0 && isdigit(*code)))
 	{
 		len++;
 		code++;
